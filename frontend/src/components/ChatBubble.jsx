@@ -20,7 +20,7 @@ export default function ChatBubble({ message, isBot }) {
           : 'bg-[#C68346] text-white rounded-tr-md font-semibold'
         }`}
       >
-        <p className="whitespace-pre-wrap">{message}</p>
+        <p className="whitespace-pre-wrap">{message.replace(/\*\*/g, '')}</p>
       </div>
     </div>
   );

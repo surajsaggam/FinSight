@@ -5,6 +5,7 @@ export default function UploadCard({ onUpload }) {
   const [isDragging, setIsDragging] = useState(false);
   const [uploaded, setUploaded] = useState(false);
   const [fileName, setFileName] = useState('');
+  const [selectedFile, setSelectedFile] = useState(null);
   const fileRef = useRef(null);
 
   const handleDragOver = (e) => {
@@ -20,6 +21,7 @@ export default function UploadCard({ onUpload }) {
     if (file) {
       setFileName(file.name);
       setUploaded(true);
+      setSelectedFile(file);
     }
   };
 
@@ -30,6 +32,7 @@ export default function UploadCard({ onUpload }) {
     if (file) {
       setFileName(file.name);
       setUploaded(true);
+      setSelectedFile(file);
     }
   };
 
@@ -57,19 +60,19 @@ export default function UploadCard({ onUpload }) {
 
       {uploaded ? (
         <div className="space-y-3">
-            <CheckCircle className="w-16 h-16 text-[#C68346] mx-auto mb-6" />
-            <p className="text-2xl font-extrabold tracking-tight text-gray-900 dark:text-white mb-2">Receipt Uploaded!</p>
-            <p className="text-gray-500 dark:text-gray-400 font-medium mb-8">Ready for AI extraction</p>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onUpload();
-              }}
-              className="px-8 py-4 rounded-full bg-[#C68346] text-white font-black tracking-widest uppercase shadow-lg shadow-[#C68346]/30 hover:shadow-xl hover:shadow-[#C68346]/40 transition-all duration-300 hover:scale-105 active:scale-95 flex items-center gap-2 mx-auto" // Updated button styles
-            >
-              Scan Receipt
-              <ArrowRight className="w-5 h-5 ml-1" />
-            </button>
+          <CheckCircle className="w-16 h-16 text-[#C68346] mx-auto mb-6" />
+          <p className="text-2xl font-extrabold tracking-tight text-gray-900 dark:text-white mb-2">Receipt Uploaded!</p>
+          <p className="text-gray-500 dark:text-gray-400 font-medium mb-8">Ready for AI extraction</p>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              if (selectedFile) onUpload(selectedFile);
+            }}
+            className="px-8 py-4 rounded-full bg-[#C68346] text-white font-black tracking-widest uppercase shadow-lg shadow-[#C68346]/30 hover:shadow-xl hover:shadow-[#C68346]/40 transition-all duration-300 hover:scale-105 active:scale-95 flex items-center gap-2 mx-auto" // Updated button styles
+          >
+            Scan Receipt
+            <ArrowRight className="w-5 h-5 ml-1" />
+          </button>
         </div>
       ) : (
         <>
@@ -83,7 +86,7 @@ export default function UploadCard({ onUpload }) {
             <p className="text-sm text-gray-500 dark:text-gray-400 font-medium mb-8">
               or click to browse from your device
             </p>
-            
+
             <button className="px-8 py-4 rounded-full bg-[#C68346] text-white font-black tracking-widest uppercase shadow-lg shadow-[#C68346]/30 hover:shadow-xl hover:shadow-[#C68346]/40 transition-all duration-300 hover:scale-105 active:scale-95 flex items-center gap-2 mx-auto"> {/* Updated button styles */}
               Select File
             </button>

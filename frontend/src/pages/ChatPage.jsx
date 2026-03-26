@@ -28,10 +28,7 @@ export default function ChatPage() {
     setIsTyping(true);
 
     try {
-      const transactions = [
-        { merchant: "Zomato", amount: 340, category: "Food", date: "2026-03-16" },
-        { merchant: "Uber", amount: 200, category: "Travel", date: "2026-03-17" }
-      ];
+      const transactions = JSON.parse(sessionStorage.getItem('transactions') || '[]');
 
       const res = await fetch("http://localhost:5000/chat", {
         method: "POST",

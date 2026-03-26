@@ -108,7 +108,7 @@ app.post("/api/receipt", upload.single("receipt"), (req, res) => {
       }
 
       if (result && result.error) {
-          return res.status(500).json({ success: false, error: result.error });
+        return res.status(500).json({ success: false, error: result.error });
       }
 
       if (error) {
@@ -126,6 +126,50 @@ app.post("/api/receipt", upload.single("receipt"), (req, res) => {
       }
 
       res.json({ success: true, data: result });
+    });
+  };
+
+  tryPython(0);
+});
+
+app.post("/api/analyze", (req, res) => {
+  const { transactions } = req.body;
+  if (!transactions) return res.status(400).json({ status: "error", error: "No transactions provided" });
+
+  const tempFilePath = path.join(uploadsDir, `temp_data_${Date.now()}.json`);
+  fs.writeFileSync(tempFilePath, JSON.stringify(transactions));
+  const analysisScript = path.join(__dirname, "../expense-analysis/analysis.py");
+
+  const pythonCommands = ["python", "python3"];
+
+  const tryPython = (index) => {
+    if (index >= pythonCommands.length) {
+      fs.unlink(tempFilePath, () => { });
+      return res.status(500).json({ status: "error", error: "Python not found" });
+    }
+
+    const pythonCmd = pythonCommands[index];
+    execFile(pythonCmd, [analysisScript, tempFilePath], { timeout: 60000 }, (error, stdout, stderr) => {
+      if (error && error.code === "ENOENT") {
+        return tryPython(index + 1);
+      }
+
+      fs.unlink(tempFilePath, () => { }); // Cleanup
+
+      if (error) {
+        console.error(`Analysis error (${pythonCmd}):`, stderr || error.message);
+        return res.status(500).json({ status: "error", error: "Analysis execution failed" });
+      }
+
+      try {
+        const jsonMatch = stdout && stdout.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
+        const jsonString = jsonMatch ? jsonMatch[0] : stdout;
+        const result = JSON.parse(jsonString);
+        res.json(result);
+      } catch (parseErr) {
+        console.error("Failed to parse analysis output:", stdout);
+        res.status(500).json({ status: "error", error: "Failed to parse analysis output" });
+      }
     });
   };
 

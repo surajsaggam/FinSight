@@ -12,7 +12,7 @@ async function main() {
     console.log("Testing Gemini NEW API...");
 
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
+      model: "gemini-3-flash",
       contents: "Say good morning in one line",
     });
 

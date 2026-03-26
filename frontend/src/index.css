@@ -55,6 +55,7 @@ body {
   border: 1px solid rgba(0, 0, 0, 0.05);
   box-shadow: 0 4px 24px -6px rgba(0, 0, 0, 0.05);
   border-radius: 1.5rem;
+  transition: box-shadow 0.4s ease, transform 0.4s ease;
 }
 
 .dark .glass-panel {
@@ -101,7 +102,9 @@ body {
   cursor: not-allowed;
 }
 
-/* Animations */
+/* ═══ ANIMATIONS ═══ */
+
+/* Fade in up (primary) */
 @keyframes fade-in-up {
   0% {
     opacity: 0;
@@ -116,27 +119,87 @@ body {
 
 .animate-fade-in-up {
   opacity: 0;
-  animation: fade-in-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: fade-in-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-.delay-100 {
-  animation-delay: 100ms;
+/* Stagger delays */
+.delay-100 { animation-delay: 100ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-250 { animation-delay: 250ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-400 { animation-delay: 400ms; }
+.delay-500 { animation-delay: 500ms; }
+
+/* Gradient text animation (for hero headline) */
+@keyframes gradient-x {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
 }
 
-.delay-200 {
-  animation-delay: 200ms;
+.animate-gradient-x {
+  animation: gradient-x 4s ease infinite;
 }
 
-.delay-300 {
-  animation-delay: 300ms;
+/* Floating orbs */
+@keyframes float-slow {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(30px, -20px) scale(1.05); }
+  66% { transform: translate(-20px, 15px) scale(0.95); }
 }
 
-.delay-400 {
-  animation-delay: 400ms;
+@keyframes float-delayed {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  40% { transform: translate(-25px, 20px) scale(1.08); }
+  70% { transform: translate(15px, -25px) scale(0.92); }
+}
+
+.animate-float-slow {
+  animation: float-slow 15s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: float-delayed 18s ease-in-out infinite;
+  animation-delay: 2s;
+}
+
+@keyframes pulse-slow {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.05); }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 8s ease-in-out infinite;
+}
+
+/* Pulse glow (for indicators) */
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(198, 131, 70, 0.2); }
+  50% { box-shadow: 0 0 20px 4px rgba(198, 131, 70, 0.15); }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
+/* Shimmer effect */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, transparent 25%, rgba(198,131,70,0.08) 50%, transparent 75%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
 }
 
 /* Focus Ring Reset */
 *:focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
+}
+
+/* Selection highlight */
+::selection {
+  background: rgba(198, 131, 70, 0.2);
 }

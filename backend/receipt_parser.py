@@ -17,21 +17,22 @@ class ReceiptData(BaseModel):
     date: str = Field(description="Date in YYYY-MM-DD format")
     total_amount: float = Field(description="Final total paid")
     currency: str = Field(description="Currency code like USD, INR, or EUR")
+    category: str = Field(description="Strictly ONE of: Food, Travel, Shopping, Entertainment, Groceries, Utilities, Health, Education, Other")
     items: List[ReceiptItem] = Field(description="List of items purchased")
 
 # 2. Setup the Client
 # Replace 'YOUR_API_KEY' with the key you got from AI Studio
-client = genai.Client(api_key='AIzaSyCEQ2xvWhPc784y5sO0tXYhkljtTd39q_E')
+client = genai.Client(api_key='AIzaSyAsFInDZqCtsUiqQgI71L2Hsydt4lE1DQE')
 
 
 # ... (keep your existing imports and Pydantic classes)
 
 def analyze_receipt(image_path, retries=3):
-    client = genai.Client(api_key='AIzaSyCEQ2xvWhPc784y5sO0tXYhkljtTd39q_E')
+    client = genai.Client(api_key='AIzaSyAsFInDZqCtsUiqQgI71L2Hsydt4lE1DQE')
     raw_image = Image.open(image_path)
     
     # NEW: Using the stable 2026 free-tier model
-    MODEL_ID = 'gemini-2.5-flash' 
+    MODEL_ID = 'gemini-3-flash-preview'
 
     for attempt in range(retries):
         try:

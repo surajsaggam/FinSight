@@ -29,6 +29,7 @@ export default function ChatPage() {
 
     try {
       const transactions = JSON.parse(sessionStorage.getItem('transactions') || '[]');
+      const monthlyBudget = sessionStorage.getItem('monthlyBudget') || 50000;
 
       const res = await fetch("http://localhost:5000/chat", {
         method: "POST",
@@ -37,7 +38,8 @@ export default function ChatPage() {
         },
         body: JSON.stringify({
           message: text,
-          transactions: transactions
+          transactions: transactions,
+          monthlyBudget: monthlyBudget
         })
       });
 

@@ -76,57 +76,23 @@ body {
     inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
-/* ─── Premium Liquid Glass (mirror shine + hover float) ─── */
+/* ─── Premium Liquid Glass (Sober UI) ─── */
 .liquid-glass-premium {
-  background: rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.09);
+  background: #0D0E12;
+  border: 1px solid rgba(255, 255, 255, 0.04);
   border-radius: 16px;
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
   position: relative;
   overflow: hidden;
-  transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1),
-              box-shadow 0.5s cubic-bezier(0.23, 1, 0.32, 1),
-              border-color 0.5s ease;
-}
-
-.liquid-glass-premium::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -60%;
-  width: 40%;
-  height: 200%;
-  background: linear-gradient(
-    105deg,
-    transparent 30%,
-    rgba(255, 255, 255, 0.06) 45%,
-    rgba(255, 255, 255, 0.12) 50%,
-    rgba(255, 255, 255, 0.06) 55%,
-    transparent 70%
-  );
-  transform: skewX(-20deg);
-  animation: mirror-sweep 4s ease-in-out infinite;
-  pointer-events: none;
-  z-index: 1;
+  transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1),
+              box-shadow 0.4s ease,
+              border-color 0.4s ease;
 }
 
 .liquid-glass-premium:hover {
-  transform: translateY(-6px) scale(1.01);
-  box-shadow:
-    0 16px 48px rgba(0, 0, 0, 0.5),
-    0 0 30px rgba(16, 185, 129, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.12);
-  border-color: rgba(16, 185, 129, 0.18);
-}
-
-@keyframes mirror-sweep {
-  0%   { left: -60%; }
-  40%  { left: 120%; }
-  100% { left: 120%; }
+  transform: translateY(-4px);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6);
+  border-color: rgba(255, 255, 255, 0.08);
 }
 
 /* ─── Hover Float (subtle) ─── */
@@ -135,7 +101,7 @@ body {
 }
 .hover-float:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.4), 0 0 20px rgba(16, 185, 129, 0.06);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.4);
 }
 
 /* ─── Page transition ─── */

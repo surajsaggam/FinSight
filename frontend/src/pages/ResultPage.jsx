@@ -15,14 +15,20 @@ export default function ResultPage() {
 
   const handleSaveToDashboard = () => {
     const existing = JSON.parse(sessionStorage.getItem('transactions') || '[]');
+    const categoryEmojis = {
+      Food: '🍔', Travel: '🚗', Transportation: '🚕', Shopping: '🛍️', Entertainment: '🎬',
+      Groceries: '🥦', Utilities: '⚡', Health: '💊', Education: '📚', Personal: '👤', Other: '📦'
+    };
+    const mappedCategory = data.category || 'Other';
+
     const newTransaction = {
       id: Date.now(),
       merchant: data.merchant_name,
       amount: data.total_amount,
       date: data.date,
       currency: data.currency,
-      category: 'Other',
-      icon: '📦',
+      category: mappedCategory,
+      icon: categoryEmojis[mappedCategory] || '📦',
       items: data.items,
     };
     sessionStorage.setItem('transactions', JSON.stringify([...existing, newTransaction]));

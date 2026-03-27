@@ -1,0 +1,7 @@
+[
+  {"amount": 320, "merchant": "Swiggy", "date": "2026-03-12"},
+  {"amount": 499, "merchant": "Amazon", "date": "2026-03-13"},
+  {"amount": 150, "merchant": "Uber", "date": "2026-03-14"},
+  {"amount": 800, "merchant": "Zomato", "date": "2026-03-15"},
+  {"amount": 1200, "merchant": "Flipkart", "date": "2026-03-16"}
+]

@@ -4,7 +4,9 @@ from pydantic import BaseModel, Field
 from typing import List, Optional
 from PIL import Image
 import time
-from google import genai
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # 1. Define the "Brain" of your project (The Schema)
 # This forces the AI to fix spelling and format dates properly.
@@ -20,18 +22,15 @@ class ReceiptData(BaseModel):
     items: List[ReceiptItem] = Field(description="List of items purchased")
 
 # 2. Setup the Client
-# Replace 'YOUR_API_KEY' with the key you got from AI Studio
-client = genai.Client(api_key='AIzaSyCEQ2xvWhPc784y5sO0tXYhkljtTd39q_E')
+client = genai.Client(api_key=os.getenv('GEMINI_API_KEY'))
 
 
 # ... (keep your existing imports and Pydantic classes)
 
 def analyze_receipt(image_path, retries=3):
-    client = genai.Client(api_key='AIzaSyCEQ2xvWhPc784y5sO0tXYhkljtTd39q_E')
+    # 1. Define the "Brain" of your project (The Schema)
+    MODEL_ID = 'gemini-2.5-flash'
     raw_image = Image.open(image_path)
-    
-    # NEW: Using the stable 2026 free-tier model
-    MODEL_ID = 'gemini-2.5-flash' 
 
     for attempt in range(retries):
         try:

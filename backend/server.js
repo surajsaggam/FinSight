@@ -53,7 +53,7 @@ Rules:
 `;
 
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
+      model: "gemini-2.5-flash",
       contents: prompt,
     });
 
@@ -108,7 +108,7 @@ app.post("/api/receipt", upload.single("receipt"), (req, res) => {
       }
 
       if (result && result.error) {
-          return res.status(500).json({ success: false, error: result.error });
+        return res.status(500).json({ success: false, error: result.error });
       }
 
       if (error) {

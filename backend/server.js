@@ -63,7 +63,7 @@ Rules:
 
   } catch (err) {
     console.error("ERROR:", err);
-    res.status(500).json({ reply: "Error from AI: " + err.message, stack: err.stack });
+    res.status(500).json({ reply: "Server error, please try later" });
   }
 });
 
@@ -119,7 +119,7 @@ app.post("/api/receipt", upload.single("receipt"), (req, res) => {
           return tryPython(index + 1);
         }
         console.error(`Python execution error (${pythonCmd}):`, error.message, stderr);
-        return res.status(500).json({ success: false, error: `Parser failed: ${stderr || error.message}` });
+        return res.status(500).json({ success: false, error: "Server error, please try later" });
       }
 
       if (!result) {

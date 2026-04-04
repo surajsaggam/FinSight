@@ -61,7 +61,7 @@ Rules:
 
   } catch (err) {
     console.error("ERROR:", err);
-    res.status(500).json({ reply: "Error from AI" });
+    res.status(500).json({ reply: "Server error, please try later" });
   }
 });
 

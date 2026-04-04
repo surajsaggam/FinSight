@@ -69,6 +69,17 @@ export default function UploadPage() {
         throw new Error(json.error || `Failed to parse receipt (status ${res.status})`);
       }
 
+      // Aggressive duplicate check (Date + Amount)
+      const existing = JSON.parse(sessionStorage.getItem('transactions') || '[]');
+      const isDuplicate = existing.some(t => 
+        t.date === json.data.date && 
+        Math.abs(t.amount - json.data.total_amount) < 0.01
+      );
+
+      if (isDuplicate) {
+        throw new Error(`Duplicate detected: A receipt for ${json.data.currency} ${json.data.total_amount} on ${json.data.date} is already in your dashboard.`);
+      }
+
       navigate('/processing', { state: { receiptData: json.data } });
 
     } catch (err) {

@@ -7,6 +7,7 @@ export default function CategorizationPage() {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [duplicateError, setDuplicateError] = useState(false);
   
   const location = useLocation();
   const navigate = useNavigate();
@@ -25,12 +26,32 @@ export default function CategorizationPage() {
       else if (lower.includes('reliance') || lower.includes('fresh')) setSelectedCategory('Groceries');
       else setSelectedCategory('Shopping');
     }
+
+    // Check for existing duplicate on load (Aggressive: Date + Amount)
+    const existing = JSON.parse(sessionStorage.getItem('transactions') || '[]');
+    const isDuplicate = existing.some(t => 
+      t.date === data.date && 
+      Math.abs(t.amount - data.total_amount) < 0.01
+    );
+    if (isDuplicate) setDuplicateError(true);
   }, [data, navigate, selectedCategory]);
 
   if (!data) return null;
 
   const handleSave = () => {
     const existing = JSON.parse(sessionStorage.getItem('transactions') || '[]');
+    
+    // Check for duplicate receipt (Aggressive: Date + Amount)
+    const isDuplicate = existing.some(t => 
+      t.date === data.date && 
+      Math.abs(t.amount - data.total_amount) < 0.01
+    );
+
+    if (isDuplicate) {
+      setDuplicateError(true);
+      return;
+    }
+
     const newTransaction = {
       id: Date.now(),
       merchant: data.merchant_name,
@@ -43,6 +64,7 @@ export default function CategorizationPage() {
     };
     sessionStorage.setItem('transactions', JSON.stringify([...existing, newTransaction]));
     setSaved(true);
+    setDuplicateError(false);
   };
 
   const categoryEmojis = {
@@ -105,7 +127,7 @@ export default function CategorizationPage() {
               {renderCategoryList.map((cat) => (
                 <button
                   key={cat}
-                  onClick={() => { setSelectedCategory(cat); setIsOpen(false); setSaved(false); }}
+                  onClick={() => { setSelectedCategory(cat); setIsOpen(false); setSaved(false); setDuplicateError(false); }}
                   className={`w-full flex items-center gap-4 px-6 py-3 text-sm font-semibold tracking-wide hover:bg-white/[0.05] transition-colors
                     ${selectedCategory === cat ? 'text-[#10B981] bg-[#10B981]/5' : 'text-[#9CA3AF]'}
                   `}
@@ -121,6 +143,11 @@ export default function CategorizationPage() {
 
         {/* Actions */}
         <div className="animate-fade-in-up delay-300">
+          {duplicateError && !saved && (
+            <div className="mb-4 py-3 px-4 rounded-xl bg-[#EF4444]/10 border border-[#EF4444]/20 text-[#EF4444] text-sm font-bold text-center flex items-center justify-center gap-2 animate-fade-in-up">
+              <span className="text-base">⚠️</span> This receipt has already been added
+            </div>
+          )}
           {saved ? (
             <button
               onClick={() => navigate('/dashboard')}

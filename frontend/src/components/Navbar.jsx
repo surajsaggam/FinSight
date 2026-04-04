@@ -23,7 +23,7 @@ export default function Navbar() {
   const isActive = (path) => location.pathname === path;
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 w-full transition-all duration-300 ${scrolled ? 'backdrop-blur-xl bg-[#04050A]/80 border-b border-white/[0.06]' : 'bg-transparent'}`}>
+    <nav className={`${isLanding ? 'absolute' : 'fixed'} top-0 left-0 right-0 z-50 w-full transition-all duration-300 ${scrolled ? 'backdrop-blur-xl bg-[#04050A]/80 border-b border-white/[0.06]' : 'bg-transparent'}`}>
       <div className="max-w-[90rem] mx-auto px-6 lg:px-16 h-16 flex items-center justify-center relative">
         {/* Logo — absolute left */}
         <Link to="/" className="absolute left-6 lg:left-16 flex items-center gap-2.5 group">

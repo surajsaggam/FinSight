@@ -22,13 +22,13 @@ class ReceiptData(BaseModel):
 
 # 2. Setup the Client
 # Replace 'YOUR_API_KEY' with the key you got from AI Studio
-client = genai.Client(api_key='AIzaSyAsFInDZqCtsUiqQgI71L2Hsydt4lE1DQE')
+client = genai.Client(api_key='AIzaSyCcDcNHmM3QBNHueY_f1Nvt6iiyE1EqJLA')
 
 
 # ... (keep your existing imports and Pydantic classes)
 
 def analyze_receipt(image_path, retries=3):
-    client = genai.Client(api_key='AIzaSyAsFInDZqCtsUiqQgI71L2Hsydt4lE1DQE')
+    client = genai.Client(api_key='AIzaSyCcDcNHmM3QBNHueY_f1Nvt6iiyE1EqJLA')
     raw_image = Image.open(image_path)
     
     # NEW: Using the stable 2026 free-tier model
@@ -57,7 +57,7 @@ def analyze_receipt(image_path, retries=3):
             else:
                 raise e
     
-    raise Exception("Max retries exceeded. Check your Google AI Studio quota.")
+    raise Exception("Server error, please try later")
 # 3. Execution Block (command-line mode)
 if __name__ == "__main__":
     import sys, json

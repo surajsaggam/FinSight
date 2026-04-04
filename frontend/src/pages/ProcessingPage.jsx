@@ -25,12 +25,12 @@ export default function ProcessingPage() {
         i++;
         el.textContent = steps[i];
       }
-    }, 1200);
+    }, 150);
     return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
-    const totalTime = steps.length * 1200;
+    const totalTime = steps.length * 150;
     const timer = setTimeout(() => {
       navigate('/result', { state: { receiptData: data } });
     }, totalTime);

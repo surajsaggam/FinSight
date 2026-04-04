@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Store, Calendar, Receipt, ArrowRight, RefreshCw, LayoutDashboard, Tag } from 'lucide-react';
 
 export default function ResultPage() {
@@ -7,8 +7,21 @@ export default function ResultPage() {
   const navigate = useNavigate();
   const data = location.state?.receiptData;
 
+  const [isDuplicate, setIsDuplicate] = useState(false);
+
   useEffect(() => {
-    if (!data) navigate('/upload');
+    if (!data) {
+      navigate('/upload');
+      return;
+    }
+    
+    // Check for existing duplicate
+    const existing = JSON.parse(sessionStorage.getItem('transactions') || '[]');
+    const duplicate = existing.some(t => 
+      t.date === data.date && 
+      Math.abs(t.amount - data.total_amount) < 0.01
+    );
+    setIsDuplicate(duplicate);
   }, [data, navigate]);
 
   if (!data) return null;
@@ -116,12 +129,23 @@ export default function ResultPage() {
 
         {/* Action Buttons */}
         <div className="space-y-3.5 delay-200 animate-fade-in-up">
+          {isDuplicate && (
+            <div className="mb-4 py-3 px-4 rounded-xl bg-[#EF4444]/10 border border-[#EF4444]/20 text-[#EF4444] text-[13px] font-bold text-center flex items-center justify-center gap-2 animate-fade-in-up">
+              <span className="text-base">⚠️</span> Duplicate detected (Already in dashboard)
+            </div>
+          )}
           <button
             onClick={handleSaveToDashboard}
-            className="w-full py-4 text-[15px] rounded-2xl bg-[#10B981] text-white font-semibold flex items-center justify-center gap-2.5 hover:bg-[#059669] hover:scale-[1.01] transition-all duration-300 shadow-lg shadow-[#10B981]/20"
+            disabled={isDuplicate}
+            className={`w-full py-4 text-[15px] rounded-2xl font-semibold flex items-center justify-center gap-2.5 transition-all duration-300 shadow-lg 
+              ${isDuplicate 
+                ? 'bg-gray-800 text-gray-500 cursor-not-allowed shadow-none grayscale' 
+                : 'bg-[#10B981] text-white hover:bg-[#059669] hover:scale-[1.01] shadow-[#10B981]/20'
+              }
+            `}
           >
             <LayoutDashboard size={18} />
-            Save to Dashboard
+            {isDuplicate ? 'Already Saved' : 'Save to Dashboard'}
             <ArrowRight size={16} className="opacity-70" />
           </button>
           

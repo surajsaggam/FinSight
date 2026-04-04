@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PieChart, Pie, Cell, ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, LineChart, Line } from 'recharts';
 import ExpenseCard from '../components/ExpenseCard';
@@ -62,6 +62,28 @@ export default function DashboardPage() {
       setIsAnalyzing(false);
     }
   }, []);
+
+  const [mlData, setMlData] = useState(null);
+
+  useEffect(() => {
+    const fetchML = async () => {
+      if (transactions.length === 0) return;
+      try {
+        const res = await fetch('http://localhost:5000/api/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ transactions })
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+          setMlData(data);
+        }
+      } catch (err) {
+        console.error("ML Analyze Error:", err);
+      }
+    };
+    fetchML();
+  }, [transactions]);
 
   const handleSaveBudget = () => {
     const newBudget = Number(tempBudget);
@@ -303,9 +325,12 @@ export default function DashboardPage() {
                           paddingAngle={2}
                           dataKey="value"
                           stroke="none"
+                          animationBegin={200}
+                          animationDuration={1200}
+                          animationEasing="ease-out"
                         >
                           {categoryData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.color} />
+                            <Cell key={`cell-${index}`} fill={entry.color} className="hover:opacity-80 transition-opacity cursor-pointer" />
                           ))}
                         </Pie>
                         <Tooltip content={<CustomTooltip />} cursor={false}/>
@@ -501,6 +526,39 @@ export default function DashboardPage() {
                 </div>
               </div>
             </div>
+
+            {/* Category Intelligence Bar Chart — Full Width */}
+            {categoryData.length > 1 && (
+              <div className="glass-panel p-8 animate-fade-in-up delay-[350ms] group hover:shadow-lg transition-shadow duration-300">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white tracking-tight">Category intelligence</h3>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400 bg-gray-50 dark:bg-white/5 px-3 py-1 rounded-full">Comparative View</span>
+                </div>
+                <div className="h-56">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={categoryData} barSize={32}>
+                      <defs>
+                        <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#C68346" stopOpacity={1} />
+                          <stop offset="100%" stopColor="#8B5E3C" stopOpacity={0.8} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#888888" strokeOpacity={0.06} vertical={false} />
+                      <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#6b7280', fontWeight: '600' }} tickLine={false} axisLine={false} tickMargin={10} />
+                      <YAxis tick={{ fontSize: 10, fill: '#6b7280', fontWeight: '600' }} tickLine={false} axisLine={false} tickFormatter={(v) => `₹${(v / 1000).toFixed(1)}k`} width={50} />
+                      <Tooltip content={<BarTooltip />} cursor={{ fill: 'rgba(198,131,70,0.06)', radius: 8 }} />
+                      <Bar 
+                        dataKey="value" 
+                        fill="url(#barGradient)" 
+                        radius={[6, 6, 0, 0]} 
+                        animationDuration={1200}
+                        animationEasing="ease-out"
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            )}
 
             {/* Recent Transactions */}
             <div className="mt-8 pb-12 animate-fade-in-up delay-[500ms]">

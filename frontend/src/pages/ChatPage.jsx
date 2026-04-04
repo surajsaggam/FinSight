@@ -1,13 +1,18 @@
 import { useState, useRef, useEffect } from 'react';
-import { Send, Sparkles } from 'lucide-react';
-import ChatBubble from '../components/ChatBubble';
+import { Send, Sparkles, Bot, User, ArrowRight } from 'lucide-react';
 import { chatResponses } from '../data/dummyData';
 
-const quickQuestions = Object.keys(chatResponses);
+const quickQuestions = [
+  'How much did I spend on food?',
+  'What is my biggest expense?',
+  'Am I within my budget?',
+  'Show spending by category',
+  'Compare this month with last month',
+];
 
 export default function ChatPage() {
   const [messages, setMessages] = useState([
-    { id: 1, text: 'Hi! I\'m your FinSight AI assistant. Ask me anything about your finances! 💰', isBot: true },
+    { id: 1, text: 'Hi! I\'m your **FinSight AI** assistant. Ask me anything about your finances — I analyze your live dashboard data in real-time! 💰', isBot: true },
   ]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -18,8 +23,6 @@ export default function ChatPage() {
   }, [messages, isTyping]);
 
   const sendMessage = async (text) => {
-    console.log("Sending message:", text);
-
     if (!text.trim()) return;
 
     const userMsg = { id: Date.now(), text, isBot: false };
@@ -44,22 +47,10 @@ export default function ChatPage() {
       });
 
       const data = await res.json();
-
-      const botMsg = {
-        id: Date.now() + 1,
-        text: data.reply,
-        isBot: true
-      };
-
-      setMessages(prev => [...prev, botMsg]);
-
+      setMessages(prev => [...prev, { id: Date.now() + 1, text: data.reply, isBot: true }]);
     } catch (err) {
       console.error(err);
-      setMessages(prev => [...prev, {
-        id: Date.now() + 1,
-        text: "Error connecting to AI",
-        isBot: true
-      }]);
+      setMessages(prev => [...prev, { id: Date.now() + 1, text: "Error connecting to AI. Please check your server.", isBot: true }]);
     }
 
     setIsTyping(false);
@@ -84,13 +75,29 @@ export default function ChatPage() {
               <p className="text-xs text-[#10B981] font-medium tracking-tight mt-0.5 flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-pulse"></span>Online</p>
             </div>
           </div>
+          <div className="text-[10px] font-bold uppercase tracking-widest text-gray-400 bg-gray-50 dark:bg-white/5 px-3 py-1.5 rounded-full">
+            Gemini 3 Flash
+          </div>
         </div>
 
         {/* Messages Block */}
         <div className="flex-1 overflow-y-auto px-6 py-8 liquid-glass min-h-[400px]">
           <div className="max-w-3xl mx-auto space-y-4">
             {messages.map((msg) => (
-              <ChatBubble key={msg.id} message={msg.text} isBot={msg.isBot} />
+              <div key={msg.id} className={`flex gap-3 animate-fade-in-up ${msg.isBot ? '' : 'flex-row-reverse'}`}>
+                {/* Avatar */}
+                <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-sm ${msg.isBot ? 'bg-gradient-to-br from-[#C68346] to-[#8B5E3C]' : 'bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10'}`}>
+                  {msg.isBot ? <Bot className="w-4.5 h-4.5 text-white" /> : <User className="w-4.5 h-4.5 text-gray-500 dark:text-gray-400" />}
+                </div>
+                {/* Bubble */}
+                <div className={`max-w-[80%] rounded-2xl px-5 py-3.5 text-sm leading-relaxed font-medium transition-all duration-300 ${
+                  msg.isBot 
+                    ? 'bg-white dark:bg-[#161616] border border-gray-100 dark:border-white/5 text-gray-700 dark:text-gray-300 shadow-sm' 
+                    : 'bg-[#C68346] text-white shadow-md shadow-[#C68346]/20'
+                }`}>
+                  {msg.text}
+                </div>
+              </div>
             ))}
 
             {isTyping && (
@@ -113,8 +120,8 @@ export default function ChatPage() {
         </div>
       </div>
 
-      {/* Input Section - Separated */}
-      <div className="w-full max-w-5xl mx-auto px-4 pb-12 space-y-4">
+      {/* Bottom Input Section */}
+      <div className="w-full max-w-4xl mx-auto px-4 pb-10 space-y-4">
         {/* Quick Questions */}
         <div className="liquid-glass px-6 py-4">
           <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-hide">
@@ -146,7 +153,7 @@ export default function ChatPage() {
                 disabled={!input.trim()}
                 className="px-8 py-4 rounded-full bg-[#10B981] text-white font-semibold flex items-center justify-center hover:bg-[#059669] transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed group"
               >
-                <Send className="w-5 h-5 group-hover:scale-110 group-hover:translate-x-1 transition-transform duration-300" />
+                <Send className="w-5 h-5 group-hover:scale-110 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-300" />
               </button>
             </div>
           </form>

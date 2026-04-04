@@ -128,6 +128,7 @@ body {
   border: 1px solid rgba(0, 0, 0, 0.05);
   box-shadow: 0 4px 24px -6px rgba(0, 0, 0, 0.05);
   border-radius: 1.5rem;
+  transition: box-shadow 0.4s ease, transform 0.4s ease;
 }
 
 .dark .glass-panel {
@@ -182,7 +183,38 @@ body {
 
 .animate-fade-in-up {
   opacity: 0;
-  animation: fade-in-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: fade-in-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Stagger delays */
+.delay-100 { animation-delay: 100ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-250 { animation-delay: 250ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-400 { animation-delay: 400ms; }
+.delay-500 { animation-delay: 500ms; }
+
+/* Gradient text animation (for hero headline) */
+@keyframes gradient-x {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.animate-gradient-x {
+  animation: gradient-x 4s ease infinite;
+}
+
+/* Floating orbs */
+@keyframes float-slow {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(30px, -20px) scale(1.05); }
+  66% { transform: translate(-20px, 15px) scale(0.95); }
+}
+
+@keyframes float-delayed {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  40% { transform: translate(-25px, 20px) scale(1.08); }
+  70% { transform: translate(15px, -25px) scale(0.92); }
 }
 
 .delay-100 { animation-delay: 100ms; }
@@ -228,4 +260,9 @@ body {
 *:focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
+}
+
+/* Selection highlight */
+::selection {
+  background: rgba(198, 131, 70, 0.2);
 }

@@ -263,8 +263,16 @@ function FeaturesGrid() {
               <h3 className="text-base font-semibold text-white mb-1.5">{f.title}</h3>
               <p className="text-[13px] text-[#9CA3AF] leading-relaxed">{f.body}</p>
             </div>
-          ))}
+          </div>
         </div>
+
+        {/* Footer */}
+        <div className="w-full text-center pb-8 opacity-50">
+          <p className="text-xs font-medium text-gray-400 tracking-wide">
+            Built with ❤️ using React, Gemini AI, and scikit-learn  •  FinSight © 2026
+          </p>
+        </div>
+
       </div>
     </section>
   );

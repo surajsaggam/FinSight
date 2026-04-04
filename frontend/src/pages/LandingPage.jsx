@@ -1,214 +1,267 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, Sparkles, Receipt, BarChart3, Activity, Shield, Zap, Brain, ChevronRight, Star } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useEffect, useRef } from 'react';
+import {
+  ArrowRight, ArrowUpRight, Sparkles, Camera, Brain, BarChart3,
+  Upload, Shield, CheckCircle, MessageCircle, Send, ScanLine,
+  TrendingUp, Github, Twitter
+} from 'lucide-react';
 
-// Animated counter for hero stats
-function StatCounter({ end, suffix = '' }) {
-  const [count, setCount] = useState(0);
+/* ─── Scroll Reveal Hook ─── */
+function useReveal() {
+  const ref = useRef(null);
   useEffect(() => {
-    const duration = 2000;
-    const start = performance.now();
-    const step = (now) => {
-      const progress = Math.min((now - start) / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 4);
-      setCount(Math.floor(end * eased));
-      if (progress < 1) requestAnimationFrame(step);
-    };
-    const timer = setTimeout(() => requestAnimationFrame(step), 500);
-    return () => clearTimeout(timer);
-  }, [end]);
-  return <>{count.toLocaleString()}{suffix}</>;
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) el.classList.add('visible'); },
+      { threshold: 0.15 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+  return ref;
 }
 
-// Floating particles background
-function FloatingOrbs() {
-  return (
-    <div className="absolute inset-0 pointer-events-none overflow-hidden">
-      {/* Primary glow */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-[#C68346]/[0.07] blur-[120px] dark:bg-[#C68346]/[0.12] animate-pulse-slow" />
-      {/* Secondary orbs */}
-      <div className="absolute top-[60%] left-[20%] w-[300px] h-[300px] rounded-full bg-purple-500/[0.04] blur-[100px] dark:bg-purple-500/[0.06] animate-float-slow" />
-      <div className="absolute top-[20%] right-[15%] w-[250px] h-[250px] rounded-full bg-blue-500/[0.03] blur-[80px] dark:bg-blue-500/[0.05] animate-float-delayed" />
-      {/* Grid lines */}
-      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48cGF0dGVybiBpZD0iZ3JpZCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBwYXR0ZXJuVW5pdHM9InVzZXJTcGFjZU9uVXNlIj48cGF0aCBkPSJNIDQwIDAgTCAwIDAgMCA0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJyZ2JhKDEyOCwxMjgsMTI4LDAuMDYpIiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-60 dark:opacity-30" />
-    </div>
-  );
-}
-
-export default function LandingPage() {
-  const features = [
-    {
-      title: 'AI Receipt Scanning',
-      desc: 'Gemini-powered OCR instantly extracts merchant, items, and totals from any receipt image.',
-      icon: Receipt,
-      gradient: 'from-[#C68346] to-[#E0A96D]',
-      delay: '0ms',
-    },
-    {
-      title: 'Visual Analytics',
-      desc: 'Beautiful interactive charts, radial gauges, and bar graphs to visualize your spending habits.',
-      icon: BarChart3,
-      gradient: 'from-purple-500 to-indigo-500',
-      delay: '100ms',
-    },
-    {
-      title: 'ML Intelligence',
-      desc: 'Machine learning predicts future spending and classifies your risk profile in real-time.',
-      icon: Brain,
-      gradient: 'from-emerald-500 to-teal-500',
-      delay: '200ms',
-    },
-    {
-      title: 'Smart Categories',
-      desc: 'AI automatically classifies each receipt into Food, Travel, Shopping, and more.',
-      icon: Sparkles,
-      gradient: 'from-rose-500 to-pink-500',
-      delay: '300ms',
-    },
-    {
-      title: 'AI Chat Assistant',
-      desc: 'Ask your financial assistant anything — it analyzes your live data and gives intelligent answers.',
-      icon: Zap,
-      gradient: 'from-amber-500 to-orange-500',
-      delay: '400ms',
-    },
-    {
-      title: 'Secure & Private',
-      desc: 'Session-based architecture ensures your financial data is never stored permanently.',
-      icon: Shield,
-      gradient: 'from-cyan-500 to-blue-500',
-      delay: '500ms',
-    },
-  ];
-
-  const stats = [
-    { label: 'Categories', value: 9, suffix: '+' },
-    { label: 'Accuracy', value: 99, suffix: '%' },
-    { label: 'ML Models', value: 3, suffix: '' },
-    { label: 'API Latency', value: 2, suffix: 's' },
-  ];
+/* ─── SECTION: Hero ─── */
+function HeroSection() {
+  const barHeights = [40, 65, 50, 80, 45, 90, 70];
+  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
   return (
-    <div className="min-h-screen flex flex-col relative overflow-hidden">
-      <FloatingOrbs />
-      
-      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 flex flex-col items-center">
+    <section className="relative min-h-screen flex items-center" style={{ background: '#04050A' }}>
+      {/* Ambient glow */}
+      <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse 60% 50% at 70% 45%, rgba(16,185,129,0.08) 0%, transparent 70%)' }} />
 
-        {/* ═══ HERO SECTION ═══ */}
-        <div className="text-center max-w-5xl mx-auto pt-16 sm:pt-24 pb-20 animate-fade-in-up">
-          
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 dark:border-white/[0.08] bg-white/60 dark:bg-white/[0.03] shadow-sm mb-8 backdrop-blur-sm hover:border-[#C68346]/30 transition-colors duration-300 cursor-default group">
-            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-            <span className="text-[13px] font-medium tracking-tight text-gray-600 dark:text-gray-300">Powered by Gemini AI & Machine Learning</span>
-            <ChevronRight className="w-3.5 h-3.5 text-gray-400 group-hover:text-[#C68346] group-hover:translate-x-0.5 transition-all" />
-          </div>
+      <div className="w-full max-w-7xl mx-auto px-6 lg:px-16 py-20 lg:py-0 flex flex-col lg:flex-row items-center gap-16 lg:gap-12">
 
-          {/* Main Headline */}
-          <h1 className="text-5xl sm:text-7xl md:text-[5.5rem] font-extrabold tracking-[-0.04em] text-gray-900 dark:text-white mb-6 leading-[0.95]">
-            <span className="block">Your Finances,</span>
-            <span className="block mt-2 bg-gradient-to-r from-[#C68346] via-[#E0A96D] to-[#C68346] bg-clip-text text-transparent bg-[length:200%_auto] animate-gradient-x">
-              Decoded by AI.
-            </span>
+        {/* Left Block */}
+        <div className="flex-1 lg:max-w-[52%] animate-fade-in-up">
+          <h1 className="font-space font-extrabold text-4xl sm:text-5xl lg:text-[62px] leading-[1.1] tracking-tight text-white uppercase">
+            Your Money.<br />Understood.
           </h1>
-
-          {/* Subtitle */}
-          <p className="mt-8 text-lg sm:text-xl text-gray-500 dark:text-gray-400 font-medium tracking-tight max-w-2xl mx-auto leading-relaxed">
-            Scan receipts, get instant AI categorization, predictive ML forecasts, and real-time financial intelligence — all in one beautiful dashboard.
+          <p className="mt-6 text-base text-[#9CA3AF] max-w-[380px] leading-[1.7]">
+            Scan receipts, track every rupee, and let AI explain where your money actually goes.
           </p>
 
-          {/* CTA Buttons */}
-          <div className="mt-12 flex flex-col sm:flex-row justify-center gap-4">
-            <Link to="/upload" className="btn-primary group px-8 py-4 text-[15px] shadow-xl shadow-[#C68346]/20 hover:shadow-2xl hover:shadow-[#C68346]/30">
-              <Receipt className="w-5 h-5" />
-              Scan Your First Receipt
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1.5 transition-transform duration-300" />
+          {/* CTAs */}
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link to="/upload" className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#10B981] text-white font-semibold text-sm hover:bg-[#059669] hover:scale-[1.02] transition-all duration-300 animate-pulse-glow">
+              <ScanLine className="w-4 h-4" /> Scan a Receipt
             </Link>
-            <Link
-              to="/dashboard"
-              className="flex items-center justify-center gap-2.5 px-8 py-4 rounded-2xl border-2 border-gray-200 dark:border-white/10 bg-white/60 dark:bg-white/[0.03] text-gray-800 dark:text-white font-semibold text-[15px] tracking-wide hover:bg-white dark:hover:bg-white/[0.06] hover:border-gray-300 dark:hover:border-white/20 transition-all duration-300 backdrop-blur-sm hover:-translate-y-0.5 hover:shadow-lg"
-            >
-              <BarChart3 className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+            <Link to="/dashboard" className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/[0.22] text-white text-sm font-medium hover:bg-white/[0.06] transition-all duration-300">
               View Dashboard
             </Link>
           </div>
-        </div>
 
-        {/* ═══ STATS BAR ═══ */}
-        <div className="w-full max-w-3xl mx-auto mb-20 animate-fade-in-up delay-100">
-          <div className="glass-panel p-1.5 flex items-center justify-between rounded-2xl">
-            {stats.map((stat, i) => (
-              <div key={stat.label} className={`flex-1 text-center py-4 ${i < stats.length -1 ? 'border-r border-gray-100 dark:border-white/5' : ''}`}>
-                <p className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
-                  <StatCounter end={stat.value} suffix={stat.suffix} />
-                </p>
-                <p className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-gray-400 mt-1">{stat.label}</p>
-              </div>
+          {/* Stat Pills */}
+          <div className="mt-10 flex flex-wrap gap-3">
+            {['💚 AI-Powered Parsing', '📊 Live Dashboard', '💬 Smart Chat Assistant'].map(pill => (
+              <span key={pill} className="px-4 py-1.5 rounded-full text-xs text-[#9CA3AF] bg-white/[0.05] border border-white/[0.07]">{pill}</span>
             ))}
           </div>
         </div>
 
-        {/* ═══ FEATURES GRID ═══ */}
-        <div className="w-full mb-20">
-          <div className="text-center mb-12 animate-fade-in-up delay-200">
-            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white">
-              Everything you need to <span className="text-[#C68346]">master</span> your money.
-            </h2>
-            <p className="mt-4 text-gray-500 dark:text-gray-400 font-medium max-w-xl mx-auto">
-              Built with cutting-edge AI, designed with obsessive attention to detail.
-            </p>
-          </div>
+        {/* Right Block — Cash Flow Card */}
+        <div className="flex-1 lg:max-w-[48%] flex justify-center animate-fade-in-up delay-200">
+          <div className="relative">
+            {/* Ambient glow behind card */}
+            <div className="absolute -inset-8 pointer-events-none" style={{ background: 'radial-gradient(ellipse 70% 60% at 60% 40%, rgba(16,185,129,0.12) 0%, transparent 70%)' }} />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {features.map((feature) => (
-              <div 
-                key={feature.title} 
-                className="glass-panel p-7 flex flex-col group hover:-translate-y-1 hover:shadow-xl transition-all duration-500 cursor-default animate-fade-in-up"
-                style={{ animationDelay: feature.delay }}
-              >
-                {/* Icon */}
-                <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center mb-5 shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-500`}>
-                  <feature.icon className="w-6 h-6 text-white" />
-                </div>
-                {/* Text */}
-                <h3 className="text-base font-bold text-gray-900 dark:text-white mb-2.5 tracking-tight group-hover:text-[#C68346] transition-colors duration-300">{feature.title}</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed font-medium flex-1">{feature.desc}</p>
-                {/* Hover arrow */}
-                <div className="mt-5 flex items-center gap-1.5 text-[#C68346] opacity-0 group-hover:opacity-100 translate-x-0 group-hover:translate-x-1 transition-all duration-500">
-                  <span className="text-xs font-bold tracking-wide">Learn more</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </div>
+            <div className="liquid-glass w-full max-w-[420px] p-6 animate-float" style={{ background: 'rgba(8, 11, 18, 0.85)' }}>
+              {/* Top row */}
+              <div className="flex items-center justify-between mb-4">
+                <span className="font-space text-[13px] text-[#9CA3AF]">Cash Flow</span>
+                <span className="flex items-center gap-1.5 text-[11px] text-[#10B981] font-medium">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-pulse" /> Live
+                </span>
               </div>
-            ))}
-          </div>
-        </div>
 
-        {/* ═══ BOTTOM CTA ═══ */}
-        <div className="w-full max-w-3xl mx-auto mb-16 animate-fade-in-up delay-400">
-          <div className="relative overflow-hidden rounded-3xl p-10 sm:p-14 text-center bg-gradient-to-br from-[#C68346] via-[#d49a5e] to-[#8B5E3C] shadow-2xl shadow-[#C68346]/30">
-            {/* Decorative circles */}
-            <div className="absolute top-0 right-0 w-60 h-60 rounded-full bg-white/10 blur-2xl -translate-y-1/2 translate-x-1/3" />
-            <div className="absolute bottom-0 left-0 w-40 h-40 rounded-full bg-black/10 blur-xl translate-y-1/2 -translate-x-1/3" />
-            
-            <div className="relative z-10">
-              <div className="flex items-center justify-center gap-1 mb-4">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-5 h-5 text-yellow-200 fill-yellow-200" />
+              {/* Balance */}
+              <div className="mb-1">
+                <span className="font-space font-bold text-[38px] text-white leading-tight">₹ 42,850</span>
+              </div>
+              <div className="flex items-center gap-1 mb-6">
+                <ArrowUpRight className="w-3.5 h-3.5 text-[#10B981]" />
+                <span className="text-[13px] text-[#10B981]">+₹ 3,200 this month</span>
+              </div>
+
+              {/* Mini bar chart */}
+              <div className="flex items-end gap-2 h-24 mb-2">
+                {barHeights.map((h, i) => (
+                  <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                    <div
+                      className="w-full rounded-t"
+                      style={{
+                        height: `${h}%`,
+                        background: 'linear-gradient(to top, #10B981, rgba(16,185,129,0.4))',
+                        boxShadow: i === 5 ? '0 0 14px rgba(16,185,129,0.5)' : 'none',
+                      }}
+                    />
+                  </div>
                 ))}
               </div>
-              <h3 className="text-2xl sm:text-3xl font-extrabold text-white mb-4 tracking-tight">
-                Start tracking your expenses today.
-              </h3>
-              <p className="text-white/80 font-medium mb-8 max-w-md mx-auto text-sm sm:text-base">
-                Join thousands of users who have taken control of their finances with AI-powered insights.
-              </p>
-              <Link 
-                to="/upload" 
-                className="inline-flex items-center gap-2.5 px-8 py-4 rounded-2xl bg-white text-[#8B5E3C] font-bold text-[15px] shadow-xl hover:shadow-2xl hover:-translate-y-0.5 transition-all duration-300 group"
-              >
-                Get Started — It's Free
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1.5 transition-transform" />
-              </Link>
+              <div className="flex gap-2 mb-5">
+                {days.map(d => (
+                  <span key={d} className="flex-1 text-center text-[10px] text-[#4B5563]">{d}</span>
+                ))}
+              </div>
+
+              {/* Transactions */}
+              {[
+                { icon: '🛒', name: 'Grocery Store', date: 'Today', amount: '-₹ 640', color: '#EF4444' },
+                { icon: '☕', name: 'Café Brew', date: 'Yesterday', amount: '-₹ 180', color: '#EF4444' },
+                { icon: '💰', name: 'Salary Credit', date: '3 days ago', amount: '+₹ 45,000', color: '#10B981' },
+              ].map((tx, i) => (
+                <div key={i} className="flex items-center justify-between py-2 border-b border-white/[0.05] last:border-0">
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-base">{tx.icon}</span>
+                    <div>
+                      <div className="text-[13px] text-white">{tx.name}</div>
+                      <div className="text-[11px] text-[#4B5563]">{tx.date}</div>
+                    </div>
+                  </div>
+                  <span className="text-[13px] font-medium" style={{ color: tx.color }}>{tx.amount}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─── SECTION: Social Proof ─── */
+function SocialProof() {
+  const ref = useReveal();
+  return (
+    <section ref={ref} className="reveal py-10 lg:py-14 px-6 lg:px-16" style={{ background: '#060810' }}>
+      <p className="text-center text-[11px] tracking-[0.14em] uppercase text-[#374151] font-medium">
+        Trusted by people who take their finances seriously
+      </p>
+      <div className="mt-7 max-w-3xl mx-auto flex items-center justify-evenly">
+        {[
+          { value: '10,000+', label: 'Receipts Scanned' },
+          { value: '₹ 2.4 Cr+', label: 'Amount Tracked' },
+          { value: '99.2%', label: 'AI Accuracy' },
+        ].map((s, i) => (
+          <div key={i} className="flex items-center">
+            {i > 0 && <div className="w-px h-10 bg-white/[0.07] mr-8 lg:mr-12 hidden sm:block" />}
+            <div className={`text-center ${i > 0 ? 'ml-0 sm:ml-0' : ''}`}>
+              <div className="font-space font-bold text-2xl lg:text-[28px] text-white">{s.value}</div>
+              <div className="text-[13px] text-[#6B7280] mt-1">{s.label}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/* ─── SECTION: How It Works ─── */
+function HowItWorks() {
+  const ref = useReveal();
+  const steps = [
+    { num: '01', icon: Camera, title: 'Scan Your Receipt', body: 'Drag and drop or upload any receipt image. Works with bills, invoices, and paper receipts.', glow: '#10B981' },
+    { num: '02', icon: Brain, title: 'AI Extracts Everything', body: 'Gemini AI reads merchant name, date, total, and every line item — structured instantly.', glow: '#3B82F6' },
+    { num: '03', icon: BarChart3, title: 'Track & Chat', body: 'Your dashboard updates live. Ask the AI assistant anything about your spending patterns.', glow: '#10B981' },
+  ];
+
+  return (
+    <section className="py-20 px-6 lg:px-16 bg-white">
+      <div ref={ref} className="reveal max-w-6xl mx-auto">
+        <div className="text-center mb-12">
+          <h2 className="font-space font-bold text-3xl lg:text-[40px] text-[#111111]">From Receipt to Insight in Seconds</h2>
+          <p className="mt-3 text-base text-[#6B7280]">Three steps. Zero manual entry. Total clarity.</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {steps.map((s, i) => (
+            <div key={i} className="relative p-7 rounded-2xl" style={{ background: 'linear-gradient(145deg, #0f1420 0%, #0d1117 100%)', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <span className="absolute top-5 right-5 font-space text-[11px] text-[#4B5563]">{s.num}</span>
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-5" style={{ background: `${s.glow}15`, boxShadow: `0 0 20px ${s.glow}20` }}>
+                <s.icon className="w-5 h-5" style={{ color: s.glow }} />
+              </div>
+              <h3 className="text-base font-semibold text-white mb-2">{s.title}</h3>
+              <p className="text-[13px] text-[#9CA3AF] leading-relaxed">{s.body}</p>
+              {i < steps.length - 1 && (
+                <div className="hidden md:flex absolute -right-4 top-1/2 -translate-y-1/2 text-[#374151] text-lg z-10">→</div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─── SECTION: Features Grid ─── */
+function FeaturesGrid() {
+  const ref = useReveal();
+  const features = [
+    {
+      title: 'AI Receipt Scanning',
+      body: 'Snap or upload any receipt. Gemini Vision extracts every detail automatically.',
+      visual: (
+        <div className="mb-4 p-4 rounded-xl border-2 border-dashed border-[#10B981]/30 bg-[#10B981]/[0.03] flex flex-col items-center gap-2">
+          <Upload className="w-6 h-6 text-[#10B981]/60" />
+          <span className="text-[11px] text-[#4B5563]">Drop receipt here</span>
+        </div>
+      ),
+    },
+    {
+      title: 'Live Expense Dashboard',
+      body: 'Charts, totals, and category breakdowns that update every time you scan.',
+      visual: (
+        <div className="mb-4 flex items-end gap-1.5 h-16">
+          {[35, 55, 45, 70, 60, 85, 50].map((h, i) => (
+            <div key={i} className="flex-1 rounded-t" style={{ height: `${h}%`, background: 'linear-gradient(to top, #10B981, rgba(16,185,129,0.3))' }} />
+          ))}
+        </div>
+      ),
+    },
+    {
+      title: 'Chat With Your Finances',
+      body: "Ask anything — 'What did I spend on food?' — and get instant data-driven answers.",
+      visual: (
+        <div className="mb-4 space-y-2">
+          <div className="ml-auto max-w-[70%] px-3 py-2 rounded-xl bg-white/[0.06] text-[11px] text-[#9CA3AF] text-right">What did I spend on food?</div>
+          <div className="flex items-start gap-1.5 max-w-[80%]">
+            <div className="w-5 h-5 rounded-md bg-[#10B981]/20 flex items-center justify-center shrink-0 mt-0.5">
+              <Sparkles className="w-3 h-3 text-[#10B981]" />
+            </div>
+            <div className="px-3 py-2 rounded-xl bg-[#10B981]/[0.07] border border-[#10B981]/20 text-[11px] text-[#9CA3AF]">₹ 1,840 across 4 transactions this week.</div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      title: 'Session-Based Privacy',
+      body: 'Your data lives in your session. Nothing stored, nothing shared, nothing leaked.',
+      visual: (
+        <div className="mb-4 flex items-center justify-center">
+          <div className="w-14 h-14 rounded-2xl bg-[#10B981]/10 flex items-center justify-center" style={{ boxShadow: '0 0 30px rgba(16,185,129,0.15)' }}>
+            <Shield className="w-7 h-7 text-[#10B981]" />
+          </div>
+        </div>
+      ),
+    },
+  ];
+
+  return (
+    <section className="py-20 px-6 lg:px-16" style={{ background: '#04050A' }}>
+      <div ref={ref} className="reveal max-w-6xl mx-auto">
+        <div className="text-center mb-12">
+          <h2 className="font-space font-bold text-3xl lg:text-[40px] text-white">Everything You Need to Master Your Money</h2>
+          <p className="mt-3 text-base text-[#9CA3AF]">Built for people who want clarity, not complexity.</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {features.map((f, i) => (
+            <div key={i} className="liquid-glass p-6">
+              {f.visual}
+              <h3 className="text-base font-semibold text-white mb-1.5">{f.title}</h3>
+              <p className="text-[13px] text-[#9CA3AF] leading-relaxed">{f.body}</p>
             </div>
           </div>
         </div>
@@ -221,6 +274,172 @@ export default function LandingPage() {
         </div>
 
       </div>
+    </section>
+  );
+}
+
+/* ─── SECTION: Chat Preview ─── */
+function ChatPreview() {
+  const ref = useReveal();
+  return (
+    <section className="py-20 px-6 lg:px-16" style={{ background: '#04050A' }}>
+      <div ref={ref} className="reveal max-w-6xl mx-auto flex flex-col lg:flex-row items-center gap-14">
+
+        {/* Left text */}
+        <div className="flex-1 lg:max-w-[55%]">
+          <h2 className="font-space font-bold text-2xl lg:text-[32px] text-white leading-tight">Your personal finance assistant, always ready</h2>
+          <p className="mt-5 text-[15px] text-[#9CA3AF] leading-[1.75] max-w-lg">
+            Stop wondering where your money went. FinSight connects every receipt to a full picture of your financial health — and lets you ask questions in plain English.
+          </p>
+          <Link to="/chat" className="mt-6 inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium text-[#10B981] bg-[#10B981]/[0.12] border border-[#10B981]/30 hover:bg-[#10B981]/[0.20] transition-all duration-300">
+            Try the Chat Assistant <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+
+        {/* Right chat mockup */}
+        <div className="flex-1 lg:max-w-[40%] w-full">
+          <div className="liquid-glass p-5 max-w-[380px] mx-auto" style={{ background: 'rgba(8, 11, 18, 0.85)' }}>
+            {/* Header */}
+            <div className="flex items-center gap-2.5 mb-5 pb-4 border-b border-white/[0.06]">
+              <div className="w-8 h-8 rounded-lg bg-[#10B981]/15 flex items-center justify-center">
+                <Sparkles className="w-4 h-4 text-[#10B981]" />
+              </div>
+              <div>
+                <span className="font-space text-sm text-white font-medium">FinSight AI</span>
+                <div className="flex items-center gap-1 text-[10px] text-[#10B981]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#10B981]" /> Online
+                </div>
+              </div>
+            </div>
+
+            {/* Messages */}
+            <div className="space-y-3 mb-4">
+              <div className="ml-auto max-w-[80%] px-4 py-2.5 rounded-2xl bg-white/[0.06] text-[13px] text-white text-right">
+                How much did I spend on food this week?
+              </div>
+              <div className="flex items-start gap-2 max-w-[85%]">
+                <div className="w-6 h-6 rounded-md bg-[#10B981]/20 flex items-center justify-center shrink-0 mt-0.5">
+                  <Sparkles className="w-3 h-3 text-[#10B981]" />
+                </div>
+                <div className="px-4 py-2.5 rounded-2xl bg-[#10B981]/[0.07] border border-[#10B981]/20 text-[13px] text-[#d1d5db]">
+                  You spent ₹ 1,840 on food this week across 4 transactions. That's 22% of your total weekly spend.
+                </div>
+              </div>
+            </div>
+
+            {/* Input */}
+            <div className="flex gap-2">
+              <div className="flex-1 px-4 py-2.5 rounded-full bg-white/[0.04] border border-white/[0.08] text-[12px] text-[#4B5563]">Ask about your finances...</div>
+              <div className="w-9 h-9 rounded-full bg-[#10B981]/15 flex items-center justify-center">
+                <Send className="w-3.5 h-3.5 text-[#10B981]" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─── SECTION: Final CTA ─── */
+function CTASection() {
+  const ref = useReveal();
+  return (
+    <section className="relative py-24 lg:py-28 px-6 lg:px-16" style={{ background: '#04050A' }}>
+      {/* Ambient glow */}
+      <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse 80% 50% at 50% 100%, rgba(16,185,129,0.10) 0%, transparent 70%)' }} />
+
+      <div ref={ref} className="reveal relative max-w-2xl mx-auto text-center">
+        <div className="w-12 h-12 rounded-xl liquid-glass-green flex items-center justify-center mx-auto mb-8">
+          <ScanLine className="w-6 h-6 text-[#10B981]" />
+        </div>
+
+        <h2 className="font-space font-extrabold text-3xl sm:text-4xl lg:text-[52px] text-white leading-[1.1] max-w-[580px] mx-auto">
+          Stop guessing.<br />Start knowing.
+        </h2>
+        <p className="mt-5 text-base text-[#9CA3AF] max-w-[440px] mx-auto">
+          Upload your first receipt in seconds. No signup, no setup, no nonsense.
+        </p>
+
+        <Link to="/upload" className="mt-8 inline-flex items-center gap-2 px-9 py-3.5 rounded-full bg-[#10B981] text-white font-bold text-[15px] hover:bg-[#059669] hover:scale-[1.03] transition-all duration-300 animate-pulse-glow">
+          Scan Your First Receipt
+        </Link>
+      </div>
+    </section>
+  );
+}
+
+/* ─── SECTION: Footer ─── */
+function Footer() {
+  return (
+    <footer className="pt-14 pb-8 px-6 lg:px-16 border-t border-white/[0.06]" style={{ background: '#06060E' }}>
+      <div className="max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-10 mb-12">
+          {/* Brand */}
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-7 h-7 rounded-lg bg-[#10B981]/15 border border-[#10B981]/25 flex items-center justify-center">
+                <TrendingUp className="w-3.5 h-3.5 text-[#10B981]" />
+              </div>
+              <span className="font-space font-bold text-white text-sm">FinSight</span>
+            </div>
+            <p className="text-sm text-[#6B7280] max-w-[210px] leading-relaxed">AI-powered expense tracking for the financially aware.</p>
+          </div>
+
+          {/* Navigate */}
+          <div>
+            <h4 className="font-space font-semibold text-[13px] text-[#9CA3AF] mb-4">Navigate</h4>
+            <ul className="space-y-2.5">
+              {[
+                { label: 'Home', to: '/' },
+                { label: 'Upload Receipt', to: '/upload' },
+                { label: 'Dashboard', to: '/dashboard' },
+                { label: 'Chat Assistant', to: '/chat' },
+              ].map(l => (
+                <li key={l.to}>
+                  <Link to={l.to} className="text-sm text-[#6B7280] hover:text-white transition-colors">{l.label}</Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Product */}
+          <div>
+            <h4 className="font-space font-semibold text-[13px] text-[#9CA3AF] mb-4">Product</h4>
+            <ul className="space-y-2.5">
+              {['How It Works', 'Features', 'Privacy', 'Open Source'].map(l => (
+                <li key={l}>
+                  <span className="text-sm text-[#6B7280] hover:text-white transition-colors cursor-pointer">{l}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        {/* Bottom bar */}
+        <div className="pt-6 border-t border-white/[0.06] flex flex-col sm:flex-row items-center justify-between gap-3">
+          <span className="text-[12px] text-[#4B5563]">© 2025 FinSight. Built with Gemini AI.</span>
+          <div className="flex items-center gap-4">
+            <Github className="w-[18px] h-[18px] text-[#6B7280] hover:text-white transition-colors cursor-pointer" />
+            <Twitter className="w-[18px] h-[18px] text-[#6B7280] hover:text-white transition-colors cursor-pointer" />
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+/* ─── Main Landing Page ─── */
+export default function LandingPage() {
+  return (
+    <div>
+      <HeroSection />
+      <SocialProof />
+      <HowItWorks />
+      <FeaturesGrid />
+      <ChatPreview />
+      <CTASection />
+      <Footer />
     </div>
   );
 }

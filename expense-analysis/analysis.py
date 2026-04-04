@@ -23,8 +23,8 @@ def load_data(filepath):
         return None
 
 def categorize_type(df):
-    # Front-end already assigns categories like Food, Travel. We want to map these to 'essential' vs 'discretionary' intelligently.
-    essential_categories = ["Groceries", "Utilities", "Health", "Healthcare", "Education", "Transport"]
+    # Front-end already assigns categories like Food, Transportation, etc.
+    essential_categories = ["Groceries", "Utilities", "Health", "Education", "Transportation", "Transport"]
     
     types = []
     for cat in df["category"]:

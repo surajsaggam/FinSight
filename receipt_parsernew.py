@@ -1,7 +1,7 @@
 import os
 from google import genai
 from pydantic import BaseModel, Field
-from typing import List, Optional, Literal
+from typing import List, Optional
 from PIL import Image
 import time
 from google import genai
@@ -17,29 +17,29 @@ class ReceiptData(BaseModel):
     date: str = Field(description="Date in YYYY-MM-DD format")
     total_amount: float = Field(description="Final total paid")
     currency: str = Field(description="Currency code like USD, INR, or EUR")
-    category: Literal["Food", "Transportation", "Shopping", "Entertainment", "Groceries", "Utilities", "Health", "Education", "Personal"] = Field(description="Accurately classify the category. E.g. Burger King -> Food, JIBZ/Uber -> Transportation, Supermarket -> Groceries. 'Other' IS NOT ALLOWED.")
+    category: str = Field(description="Strictly ONE of: Food, Travel, Shopping, Entertainment, Groceries, Utilities, Health, Education, Other")
     items: List[ReceiptItem] = Field(description="List of items purchased")
 
 # 2. Setup the Client
 # Replace 'YOUR_API_KEY' with the key you got from AI Studio
-client = genai.Client(api_key='AIzaSyAYYf1yPfvjKznhzpl48ikUUYrMjXvu2bU')
+client = genai.Client(api_key='AIzaSyCcDcNHmM3QBNHueY_f1Nvt6iiyE1EqJLA')
 
 
 # ... (keep your existing imports and Pydantic classes)
 
 def analyze_receipt(image_path, retries=3):
-    client = genai.Client(api_key='AIzaSyAYYf1yPfvjKznhzpl48ikUUYrMjXvu2bU')
+    client = genai.Client(api_key='AIzaSyCcDcNHmM3QBNHueY_f1Nvt6iiyE1EqJLA')
     raw_image = Image.open(image_path)
     
-    # NEW: Using the requested 2.5 flash model
-    MODEL_ID = 'gemini-2.5-flash'
+    # NEW: Using the stable 2026 free-tier model
+    MODEL_ID = 'gemini-3-flash-preview'
 
     for attempt in range(retries):
         try:
             response = client.models.generate_content(
                 model=MODEL_ID,
                 contents=[
-                    "Extract receipt details into JSON. Fix spelling. Date format YYYY-MM-DD. CRITICAL: You must accurately classify the `category` into one of the exact allowed ENUM choices based on the merchant and items (e.g., Burger King -> Food, Supermarket -> Groceries, Hospital -> Health). Do NOT default to 'Other' if a better fit exists.",
+                    "Extract receipt details into JSON. Fix spelling. Date format YYYY-MM-DD.",
                     raw_image
                 ],
                 config={

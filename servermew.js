@@ -34,12 +34,11 @@ app.post("/chat", async (req, res) => {
   try {
     console.log("Incoming request:", req.body);
 
-    const { message, transactions, monthlyBudget } = req.body;
+    const { message, transactions } = req.body;
 
     const prompt = `
 You are a smart financial assistant.
 
-User Budget Limit: ₹${monthlyBudget || 50000}
 User transactions:
 ${JSON.stringify(transactions)}
 
@@ -51,11 +50,10 @@ Rules:
 - Keep answer short
 - Give insights if possible
 - If prediction asked, estimate based on data
-- If asked about budget, calculate their total spent (sum of transaction amounts) and compare it exactly to their User Budget Limit.
 `;
 
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-3-flash-preview",
       contents: prompt,
     });
 
@@ -119,7 +117,7 @@ app.post("/api/receipt", upload.single("receipt"), (req, res) => {
           return tryPython(index + 1);
         }
         console.error(`Python execution error (${pythonCmd}):`, error.message, stderr);
-        return res.status(500).json({ success: false, error: "Server error, please try later" });
+        return res.status(500).json({ success: false, error: `Parser failed: ${stderr || error.message}` });
       }
 
       if (!result) {

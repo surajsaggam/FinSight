@@ -25,18 +25,15 @@ export default function ProcessingPage() {
         i++;
         el.textContent = steps[i];
       }
-    }, 1200);
+    }, 150);
     return () => clearInterval(interval);
   }, []);
 
-  // auto-navigate when the animation finishes
   useEffect(() => {
-    const totalTime = steps.length * 1200;
+    const totalTime = steps.length * 150;
     const timer = setTimeout(() => {
-      // forward the receipt data to the result page
       navigate('/result', { state: { receiptData: data } });
     }, totalTime);
-    
     return () => clearTimeout(timer);
   }, [navigate, data]);
 
@@ -46,26 +43,25 @@ export default function ProcessingPage() {
 
         {/* Animated icon */}
         <div className="relative inline-flex items-center justify-center mb-8">
-          <div className="w-20 h-20 rounded-3xl bg-[#C68346]/10 flex items-center justify-center">
-            <ScanLine size={36} className="text-[#C68346] animate-pulse" />
+          <div className="w-20 h-20 rounded-3xl bg-[#10B981]/10 flex items-center justify-center">
+            <ScanLine size={36} className="text-[#10B981] animate-pulse" />
           </div>
-          {/* Orbiting ring */}
-          <div className="absolute inset-0 rounded-full border-2 border-[#C68346]/30 animate-spin [animation-duration:3s]" />
+          <div className="absolute inset-0 rounded-full border-2 border-[#10B981]/30 animate-spin [animation-duration:3s]" />
         </div>
 
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+        <h2 className="font-space text-2xl font-bold text-white mb-2">
           Analyzing your receipt
         </h2>
         <p
           ref={stepRef}
-          className="text-gray-400 text-sm transition-all duration-500"
+          className="text-[#9CA3AF] text-sm transition-all duration-500"
         >
           {steps[0]}
         </p>
 
         {/* Progress bar */}
-        <div className="mt-8 h-1 w-full bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
-          <div className="h-full bg-gradient-to-r from-[#C68346] to-[#E0A96D] rounded-full animate-[progress_6s_ease-in-out_forwards]" />
+        <div className="mt-8 h-1 w-full bg-white/[0.05] rounded-full overflow-hidden">
+          <div className="h-full bg-gradient-to-r from-[#10B981] to-[#10B981]/40 rounded-full animate-[progress_6s_ease-in-out_forwards]" />
         </div>
 
         <style>{`

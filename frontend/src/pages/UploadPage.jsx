@@ -49,7 +49,6 @@ export default function UploadPage() {
 
       console.log('Uploading receipt...', file.name);
 
-      // Use absolute backend URL to bypass Vite proxy (more reliable)
       const res = await fetch('http://localhost:5000/api/receipt', {
         method: 'POST',
         body: formData,
@@ -70,7 +69,17 @@ export default function UploadPage() {
         throw new Error(json.error || `Failed to parse receipt (status ${res.status})`);
       }
 
-      // Only navigate after successful backend response
+      // Aggressive duplicate check (Date + Amount)
+      const existing = JSON.parse(sessionStorage.getItem('transactions') || '[]');
+      const isDuplicate = existing.some(t => 
+        t.date === json.data.date && 
+        Math.abs(t.amount - json.data.total_amount) < 0.01
+      );
+
+      if (isDuplicate) {
+        throw new Error(`Duplicate detected: A receipt for ${json.data.currency} ${json.data.total_amount} on ${json.data.date} is already in your dashboard.`);
+      }
+
       navigate('/processing', { state: { receiptData: json.data } });
 
     } catch (err) {
@@ -86,23 +95,23 @@ export default function UploadPage() {
 
         {/* Header */}
         <div className="text-center mb-8 animate-fade-in-up">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#C68346]/10 border border-[#C68346]/20 text-[#C68346] text-sm font-medium mb-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#10B981]/10 border border-[#10B981]/20 text-[#10B981] text-sm font-medium mb-4">
             <ScanLine size={14} />
             AI Receipt Scanner
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+          <h1 className="font-space text-3xl font-bold text-white mb-2">
             Upload your receipt
           </h1>
-          <p className="text-gray-500 dark:text-gray-400 text-sm">
+          <p className="text-[#9CA3AF] text-sm">
             Our AI will extract merchant, date, items & total automatically
           </p>
         </div>
 
         {/* Drop Zone */}
         <div
-          className={`glass-panel p-6 animate-fade-in-up delay-100 transition-all duration-200 cursor-pointer
-            ${dragging ? 'border-[#C68346] border-2 scale-[1.01]' : ''}
-            ${preview ? 'border-0' : 'border-2 border-dashed border-gray-200 dark:border-gray-700'}
+          className={`liquid-glass p-6 animate-fade-in-up delay-100 transition-all duration-200 cursor-pointer
+            ${dragging ? 'border-[#10B981] border-2 scale-[1.01]' : ''}
+            ${preview ? 'border-0' : 'border-2 border-dashed border-white/[0.12]'}
           `}
           onDrop={onDrop}
           onDragOver={onDragOver}
@@ -122,7 +131,7 @@ export default function UploadPage() {
               >
                 <X size={14} />
               </button>
-              <div className="mt-3 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+              <div className="mt-3 flex items-center gap-2 text-sm text-[#9CA3AF]">
                 <FileImage size={14} />
                 <span className="truncate">{file?.name}</span>
                 <span className="ml-auto shrink-0">
@@ -132,18 +141,18 @@ export default function UploadPage() {
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center py-10 gap-3">
-              <div className="w-14 h-14 rounded-2xl bg-[#C68346]/10 flex items-center justify-center">
-                <Upload size={24} className="text-[#C68346]" />
+              <div className="w-14 h-14 rounded-2xl bg-[#10B981]/10 flex items-center justify-center">
+                <Upload size={24} className="text-[#10B981]" />
               </div>
               <div className="text-center">
-                <p className="font-semibold text-gray-700 dark:text-gray-200">
+                <p className="font-semibold text-white">
                   Drop your receipt here
                 </p>
-                <p className="text-sm text-gray-400 mt-1">
-                  or <span className="text-[#C68346] underline underline-offset-2">browse files</span>
+                <p className="text-sm text-[#9CA3AF] mt-1">
+                  or <span className="text-[#10B981] underline underline-offset-2">browse files</span>
                 </p>
               </div>
-              <p className="text-xs text-gray-400">JPG, PNG, WEBP up to 10MB</p>
+              <p className="text-xs text-[#4B5563]">JPG, PNG, WEBP up to 10MB</p>
             </div>
           )}
         </div>
@@ -158,7 +167,7 @@ export default function UploadPage() {
 
         {/* Error */}
         {error && (
-          <div className="mt-3 px-4 py-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-sm animate-fade-in-up">
+          <div className="mt-3 px-4 py-3 rounded-xl bg-[#EF4444]/10 border border-[#EF4444]/25 text-[#EF4444] text-sm animate-fade-in-up">
             {error}
           </div>
         )}
@@ -167,7 +176,7 @@ export default function UploadPage() {
         <button
           onClick={handleSubmit}
           disabled={!file || loading}
-          className="btn-primary w-full mt-4 py-3.5 text-base animate-fade-in-up delay-200"
+          className="w-full mt-4 py-3.5 text-base rounded-full bg-[#10B981] text-white font-semibold flex items-center justify-center gap-2 hover:bg-[#059669] hover:scale-[1.01] transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed animate-pulse-glow"
         >
           {loading ? (
             <>
@@ -182,7 +191,7 @@ export default function UploadPage() {
           )}
         </button>
 
-        <p className="text-center text-xs text-gray-400 mt-4 animate-fade-in-up delay-300">
+        <p className="text-center text-xs text-[#4B5563] mt-4">
           Your receipt is processed securely and never stored permanently.
         </p>
       </div>

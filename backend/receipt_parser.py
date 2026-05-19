@@ -22,7 +22,7 @@ class ReceiptData(BaseModel):
 
 # 2. Setup the Client
 # Replace 'YOUR_API_KEY' with the key you got from AI Studio
-client = genai.Client(api_key='AIzaSyAYYf1yPfvjKznhzpl48ikUUYrMjXvu2bU')
+client = genai.Client(api_key='enter_your_api_key')
 
 
 # ... (keep your existing imports and Pydantic classes)

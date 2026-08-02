@@ -7,6 +7,7 @@ AI-powered expense tracker with chatbot insights.
 - Expense tracking
 - AI chatbot (Gemini)
 - Dashboard insights
+- Customer Analysis
 
 ## 🛠️ Setup
 

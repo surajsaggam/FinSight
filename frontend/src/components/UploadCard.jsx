@@ -62,7 +62,7 @@ export default function UploadCard({ onUpload }) {
         <div className="space-y-3">
           <CheckCircle className="w-16 h-16 text-[#C68346] mx-auto mb-6" />
           <p className="text-2xl font-extrabold tracking-tight text-gray-900 dark:text-white mb-2">Receipt Uploaded!</p>
-          <p className="text-gray-500 dark:text-gray-400 font-medium mb-8">Ready for AI extraction</p>
+          <p className="text-gray-500 dark:text-gray-400 font-medium mb-8">{fileName || 'Ready for AI extraction'}</p>
           <button
             onClick={(e) => {
               e.stopPropagation();

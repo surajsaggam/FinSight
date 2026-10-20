@@ -1,4 +1,20 @@
-node_modules
+# Node
+node_modules/
+dist/
+build/
+
+# Secrets
 .env
-dist
-build
+
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# User uploads
+backend/uploads/
+
+# OS / editor junk
+.DS_Store
+Thumbs.db
+.vscode/

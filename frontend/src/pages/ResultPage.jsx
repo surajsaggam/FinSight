@@ -1,12 +1,16 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
-import { Store, Calendar, Receipt, ArrowRight, RefreshCw, LayoutDashboard, Tag, AlertTriangle } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Store, Calendar, Receipt, ArrowRight, RefreshCw, LayoutDashboard, Tag, AlertTriangle, Copy, Check } from 'lucide-react';
 import { CATEGORY_EMOJIS } from '../data/dummyData';
 import { trackEvent } from '../utils/analytics';
+import { copyToClipboard } from '../utils/clipboard';
+import { useToast } from '../context/ToastContext';
 
 export default function ResultPage() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { addToast } = useToast();
+  const [copied, setCopied] = useState(false);
   const data = location.state?.receiptData;
 
   useEffect(() => {
@@ -33,6 +37,27 @@ export default function ResultPage() {
   const items = Array.isArray(data.items) ? data.items : [];
   const mappedCategory = data.category || 'Other';
 
+  const handleCopyReceipt = async () => {
+    const lines = [
+      `Receipt: ${data.merchant_name || 'Receipt'}`,
+      `Date: ${data.date || 'Today'}`,
+      `Category: ${mappedCategory}`,
+      `Total: ${data.currency || 'INR'} ${totalAmount.toFixed(2)}`,
+    ];
+    if (items.length > 0) {
+      lines.push('Items:');
+      items.forEach((it) => {
+        lines.push(` - ${it.name}: ${data.currency} ${(Number(it.price) || 0).toFixed(2)}`);
+      });
+    }
+    const ok = await copyToClipboard(lines.join('\n'));
+    if (ok) {
+      setCopied(true);
+      addToast('Receipt summary copied to clipboard', 'success');
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
   const handleSaveToDashboard = () => {
     const existing = JSON.parse(sessionStorage.getItem('transactions') || '[]');
 
@@ -49,6 +74,7 @@ export default function ResultPage() {
     sessionStorage.setItem('transactions', JSON.stringify([...existing, newTransaction]));
     window.dispatchEvent(new Event('finsight-session-updated'));
     trackEvent('receipt_saved_to_dashboard', { category: mappedCategory, was_duplicate: isDuplicate });
+    addToast('Receipt saved to dashboard', 'success');
     navigate('/dashboard');
   };
 
@@ -91,6 +117,15 @@ export default function ResultPage() {
                 <span>{mappedCategory}</span>
               </div>
             </div>
+
+            <button
+              type="button"
+              onClick={handleCopyReceipt}
+              className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-[11px] text-[#9CA3AF] hover:text-white transition-colors cursor-pointer"
+            >
+              {copied ? <Check size={12} className="text-[#10B981]" /> : <Copy size={12} />}
+              <span>{copied ? 'Copied' : 'Copy Details'}</span>
+            </button>
           </div>
 
           {/* Separation Line & Ticket Cutouts */}

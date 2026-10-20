@@ -1,7 +1,21 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { BarChart3, Upload, MessageCircle, Home, TrendingUp, ShieldCheck, Trash2 } from 'lucide-react';
+import {
+  BarChart3,
+  Upload,
+  MessageCircle,
+  Home,
+  TrendingUp,
+  ShieldCheck,
+  Trash2,
+  Search,
+  Sun,
+  Moon,
+  Menu,
+  X,
+} from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { trackEvent } from '../utils/analytics';
+import { useTheme } from '../context/ThemeContext';
 
 function readSessionTxCount() {
   try {
@@ -17,18 +31,26 @@ export default function Navbar() {
   const navigate = useNavigate();
   const isLanding = location.pathname === '/';
   const [scrolled, setScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [, setTick] = useState(0);
+  const { darkMode, toggleTheme } = useTheme();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
     const handleSessionUpdate = () => setTick((t) => t + 1);
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     window.addEventListener('finsight-session-updated', handleSessionUpdate);
     return () => {
       window.removeEventListener('scroll', handleScroll);
       window.removeEventListener('finsight-session-updated', handleSessionUpdate);
     };
   }, []);
+
+  const [prevPath, setPrevPath] = useState(location.pathname);
+  if (location.pathname !== prevPath) {
+    setPrevPath(location.pathname);
+    setMobileMenuOpen(false);
+  }
 
   const sessionCount = readSessionTxCount();
 
@@ -45,6 +67,10 @@ export default function Navbar() {
     }
   };
 
+  const handleOpenSearch = () => {
+    window.dispatchEvent(new CustomEvent('open-finsight-search'));
+  };
+
   const navLinks = [
     { path: '/', IconComp: Home, label: 'Home' },
     { path: '/upload', IconComp: Upload, label: 'Upload' },
@@ -55,19 +81,28 @@ export default function Navbar() {
   const isActive = (path) => location.pathname === path;
 
   return (
-    <nav className={`${isLanding ? 'absolute' : 'fixed'} top-0 left-0 right-0 z-50 w-full transition-all duration-300 ${scrolled || !isLanding ? 'backdrop-blur-xl bg-[#04050A]/85 border-b border-white/[0.06]' : 'bg-transparent'}`}>
-      <div className="max-w-[90rem] mx-auto px-4 sm:px-6 lg:px-16 h-16 flex items-center justify-between">
-        {/* Logo */}
-        <Link to="/" className="flex items-center gap-2.5 group shrink-0">
-          <div className="w-8 h-8 rounded-lg bg-[#10B981]/15 border border-[#10B981]/25 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
-            <TrendingUp className="w-4 h-4 text-[#10B981]" />
-          </div>
-          <span className="text-lg font-bold tracking-tight text-white font-space">FinSight</span>
-        </Link>
+    <header className="fixed top-0 left-0 right-0 z-50 w-full print:hidden">
+      <nav
+        aria-label="Main Navigation"
+        className={`w-full transition-all duration-300 ${
+          scrolled || !isLanding || mobileMenuOpen
+            ? 'backdrop-blur-xl bg-slate-950/85 border-b border-slate-800/80 shadow-sm'
+            : 'bg-transparent'
+        }`}
+      >
+        <div className="max-w-[90rem] mx-auto px-4 sm:px-6 lg:px-16 h-16 flex items-center justify-between">
+          {/* Logo */}
+          <Link to="/" className="flex items-center gap-2.5 group shrink-0">
+            <div className="w-8 h-8 rounded-lg bg-emerald-500/15 border border-emerald-500/25 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+              <TrendingUp className="w-4 h-4 text-emerald-400" />
+            </div>
+            <span className="text-lg font-bold tracking-tight text-slate-100 font-space">
+              FinSight
+            </span>
+          </Link>
 
-        {/* Center Nav Links — Desktop */}
-        {!isLanding && (
-          <div className="hidden md:flex items-center bg-white/[0.03] border border-white/[0.06] rounded-full p-1">
+          {/* Center Nav Links — Desktop */}
+          <div className="hidden md:flex items-center bg-slate-900/60 border border-slate-800/80 rounded-full p-1 backdrop-blur-md">
             {navLinks.map((item) => {
               const active = isActive(item.path);
               const IconElement = item.IconComp;
@@ -75,11 +110,11 @@ export default function Navbar() {
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`flex items-center gap-2 px-5 py-2 rounded-full text-[13px] font-semibold tracking-tight transition-all duration-300
-                    ${active
-                      ? 'text-[#10B981] bg-[#10B981]/10'
-                      : 'text-[#9CA3AF] hover:text-white'
-                    }`}
+                  className={`flex items-center gap-2 px-5 py-2 rounded-full text-[13px] font-semibold tracking-tight transition-all duration-200 ${
+                    active
+                      ? 'text-emerald-400 bg-emerald-500/10 shadow-sm'
+                      : 'text-slate-400 hover:text-slate-100'
+                  }`}
                 >
                   <IconElement className="w-4 h-4" />
                   <span>{item.label}</span>
@@ -87,62 +122,115 @@ export default function Navbar() {
               );
             })}
           </div>
-        )}
 
-        {/* Right Side Controls */}
-        {isLanding ? (
-          <div className="flex items-center gap-3">
-            <Link
-              to="/dashboard"
-              className="hidden sm:inline-flex px-4 py-2 rounded-full text-xs font-medium text-[#9CA3AF] hover:text-white transition-colors"
+          {/* Right Controls */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Search Trigger Button */}
+            <button
+              type="button"
+              onClick={handleOpenSearch}
+              aria-label="Search site or run commands"
+              className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 rounded-full bg-slate-900/60 hover:bg-slate-800/80 border border-slate-800/80 text-xs text-slate-400 hover:text-slate-200 transition-colors"
             >
-              Dashboard
-            </Link>
-            <Link
-              to="/upload"
-              className="px-5 py-2 rounded-full text-sm font-medium text-white border border-white/[0.18] bg-white/[0.05] hover:bg-white/[0.10] hover:scale-[1.02] transition-all duration-300"
+              <Search className="w-3.5 h-3.5 text-slate-400" />
+              <span className="hidden sm:inline">Search</span>
+              <kbd className="hidden sm:inline-block text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-400">
+                ⌘K
+              </kbd>
+            </button>
+
+            {/* Dark / Light Mode Toggle */}
+            <button
+              type="button"
+              onClick={toggleTheme}
+              aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+              className="p-2 rounded-full bg-slate-900/60 hover:bg-slate-800/80 border border-slate-800/80 text-slate-400 hover:text-amber-400 transition-colors"
             >
-              Get Started
-            </Link>
+              {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4 text-cyan-400" />}
+            </button>
+
+            {/* Session Indicator & Clear Button */}
+            <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900/60 border border-slate-800/80 text-[11px] text-slate-400">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Session ({sessionCount})</span>
+              {sessionCount > 0 && (
+                <button
+                  type="button"
+                  onClick={handleEndSession}
+                  title="End session & clear all data"
+                  className="ml-1 pl-2 border-l border-slate-800 text-rose-400 hover:text-rose-300 flex items-center gap-1 transition-colors cursor-pointer"
+                >
+                  <Trash2 className="w-3 h-3" />
+                  <span>Reset</span>
+                </button>
+              )}
+            </div>
+
+            {/* Upload CTA for Landing Page */}
+            {isLanding && (
+              <Link
+                to="/upload"
+                className="hidden sm:inline-flex px-4 py-1.5 rounded-full text-xs font-medium text-slate-950 bg-emerald-400 hover:bg-emerald-300 hover:scale-[1.02] shadow-sm transition-all duration-200 font-semibold"
+              >
+                Scan Receipt
+              </Link>
+            )}
+
+            {/* Mobile Hamburger Toggle */}
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen((prev) => !prev)}
+              aria-label="Toggle mobile menu"
+              aria-expanded={mobileMenuOpen}
+              className="md:hidden p-2 rounded-xl text-slate-400 hover:text-white bg-slate-900/60 border border-slate-800/80 focus:outline-none"
+            >
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
           </div>
-        ) : (
-          <div className="flex items-center gap-2">
-            {/* Mobile icon links */}
-            <div className="flex md:hidden items-center bg-white/[0.03] border border-white/[0.06] rounded-full px-1.5 py-1">
+        </div>
+
+        {/* Responsive Mobile Drawer */}
+        {mobileMenuOpen && (
+          <div className="md:hidden border-t border-slate-800/80 bg-slate-950/95 backdrop-blur-xl px-4 py-4 space-y-2 animate-in slide-in-from-top-2 duration-150">
+            <div className="grid grid-cols-2 gap-2">
               {navLinks.map((item) => {
+                const active = isActive(item.path);
                 const IconElement = item.IconComp;
                 return (
                   <Link
                     key={item.path}
                     to={item.path}
-                    aria-label={item.label}
-                    title={item.label}
-                    className={`p-2 rounded-full transition-colors ${isActive(item.path) ? 'text-[#10B981] bg-[#10B981]/10' : 'text-[#9CA3AF] hover:text-white'}`}
+                    className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+                      active
+                        ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                        : 'text-slate-300 hover:bg-slate-900'
+                    }`}
                   >
-                    <IconElement className="w-4 h-4" />
+                    <IconElement className="w-4 h-4 shrink-0" />
+                    <span>{item.label}</span>
                   </Link>
                 );
               })}
             </div>
 
-            {/* Session status & Clear Session button */}
-            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.03] border border-white/[0.06] text-[11px] text-[#9CA3AF]">
-              <ShieldCheck className="w-3.5 h-3.5 text-[#10B981]" />
-              <span>Session ({sessionCount})</span>
+            <div className="pt-2 border-t border-slate-800/60 flex items-center justify-between text-xs text-slate-400">
+              <span className="flex items-center gap-1.5">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                Receipts stored: {sessionCount}
+              </span>
               {sessionCount > 0 && (
                 <button
+                  type="button"
                   onClick={handleEndSession}
-                  title="End session & clear all data"
-                  className="ml-1 pl-2 border-l border-white/[0.08] text-[#EF4444]/80 hover:text-[#EF4444] flex items-center gap-1 transition-colors cursor-pointer"
+                  className="text-rose-400 hover:text-rose-300 font-medium"
                 >
-                  <Trash2 className="w-3 h-3" />
-                  <span className="hidden lg:inline">Reset</span>
+                  Clear Data
                 </button>
               )}
             </div>
           </div>
         )}
-      </div>
-    </nav>
+      </nav>
+    </header>
   );
 }

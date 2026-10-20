@@ -5,6 +5,7 @@ import {
   Upload, Shield, Send, ScanLine,
   TrendingUp
 } from 'lucide-react';
+import FAQSection from '../components/FAQSection';
 
 /* ─── Scroll Reveal Hook ─── */
 function useReveal() {
@@ -435,6 +436,7 @@ export default function LandingPage() {
       <HowItWorks />
       <FeaturesGrid />
       <ChatPreview />
+      <FAQSection />
       <CTASection />
       <Footer />
     </div>

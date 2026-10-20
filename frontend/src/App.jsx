@@ -2,6 +2,14 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'r
 import { useEffect } from 'react';
 import Navbar from './components/Navbar';
 import ErrorBoundary from './components/ErrorBoundary';
+import CookieBanner from './components/CookieBanner';
+import SearchModal from './components/SearchModal';
+import BackToTop from './components/BackToTop';
+import SupportButton from './components/SupportButton';
+import ScrollProgressBar from './components/ScrollProgressBar';
+import { ThemeProvider } from './context/ThemeContext';
+import { ToastProvider } from './context/ToastContext';
+
 import LandingPage from './pages/LandingPage';
 import UploadPage from './pages/UploadPage';
 import ProcessingPage from './pages/ProcessingPage';
@@ -23,9 +31,29 @@ function AppContent() {
   }, [location.pathname]);
 
   return (
-    <div className="relative min-h-screen bg-[#04050A] text-white selection:bg-[#10B981]/30 overflow-x-hidden font-sans">
+    <div className="relative min-h-screen bg-slate-950 text-slate-100 overflow-x-hidden font-sans antialiased transition-colors duration-200">
+      {/* Accessible Skip-to-Content Link */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:px-4 focus:py-2 focus:bg-emerald-400 focus:text-slate-950 focus:font-semibold focus:rounded-xl focus:shadow-xl focus:outline-none transition-all"
+      >
+        Skip to main content
+      </a>
+
+      {/* Top viewport scroll progress indicator */}
+      <ScrollProgressBar />
+
+      {/* Sticky Header Navbar */}
       <Navbar />
-      <div className={`relative z-10 flex flex-col min-h-screen ${location.pathname === '/' ? '' : 'pt-16 pb-12'}`}>
+
+      {/* Main Content Landmark */}
+      <main
+        id="main-content"
+        tabIndex={-1}
+        className={`relative z-10 flex flex-col min-h-screen outline-none ${
+          location.pathname === '/' ? '' : 'pt-16 pb-12'
+        }`}
+      >
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/upload" element={<UploadPage />} />
@@ -42,7 +70,13 @@ function AppContent() {
           {/* Custom 404 Page */}
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
-      </div>
+      </main>
+
+      {/* Global Interactive Utilities */}
+      <SearchModal />
+      <CookieBanner />
+      <BackToTop />
+      <SupportButton />
     </div>
   );
 }
@@ -50,9 +84,13 @@ function AppContent() {
 export default function App() {
   return (
     <ErrorBoundary>
-      <Router>
-        <AppContent />
-      </Router>
+      <ThemeProvider>
+        <ToastProvider>
+          <Router>
+            <AppContent />
+          </Router>
+        </ToastProvider>
+      </ThemeProvider>
     </ErrorBoundary>
   );
 }

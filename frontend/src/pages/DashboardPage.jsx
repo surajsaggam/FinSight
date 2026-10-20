@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { analyzeTransactions } from '../utils/api';
 import { trackEvent } from '../utils/analytics';
+import { useToast } from '../context/ToastContext';
 import { transactions as demoTransactions, categories, CATEGORY_EMOJIS } from '../data/dummyData';
 
 const CustomTooltip = ({ active, payload, label, prefix = '₹' }) => {
@@ -28,6 +29,8 @@ const CustomTooltip = ({ active, payload, label, prefix = '₹' }) => {
 
 export default function DashboardPage() {
   const navigate = useNavigate();
+  const { addToast } = useToast();
+  const [lastUpdated, setLastUpdated] = useState(() => new Date());
   const [transactions, setTransactions] = useState(() => {
     try {
       return JSON.parse(sessionStorage.getItem('transactions') || '[]');
@@ -52,8 +55,9 @@ export default function DashboardPage() {
   });
   const [manualError, setManualError] = useState('');
 
-  // Clear Data Confirmation Modal
+  // Clear Data & Expense Confirmation Modals
   const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [expenseToDelete, setExpenseToDelete] = useState(null);
 
   // Advanced AI States
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -120,6 +124,7 @@ export default function DashboardPage() {
 
   const syncTransactions = (updatedList) => {
     setTransactions(updatedList);
+    setLastUpdated(new Date());
     sessionStorage.setItem('transactions', JSON.stringify(updatedList));
   };
 
@@ -133,12 +138,14 @@ export default function DashboardPage() {
     setMonthlyBudget(newBudget);
     sessionStorage.setItem('monthlyBudget', newBudget.toString());
     setIsEditingBudget(false);
+    addToast(`Monthly budget set to ₹${newBudget.toLocaleString()}`, 'success');
     trackEvent('budget_updated', { budget: newBudget });
   };
 
   const handleDeleteTransaction = (id) => {
     const updatedTransactions = transactions.filter(t => t.id !== id);
     syncTransactions(updatedTransactions);
+    addToast('Expense removed from session', 'info');
     trackEvent('transaction_deleted');
   };
 
@@ -155,6 +162,7 @@ export default function DashboardPage() {
       return t;
     });
     syncTransactions(updatedTransactions);
+    addToast('Expense updated', 'success');
     trackEvent('transaction_edited');
   };
 
@@ -189,6 +197,7 @@ export default function DashboardPage() {
 
     syncTransactions([...transactions, newTx]);
     trackEvent('manual_expense_added', { category: manualForm.category });
+    addToast(`Added expense from ${trimmedMerchant}`, 'success');
     setManualForm({
       merchant: '',
       amount: '',
@@ -201,6 +210,7 @@ export default function DashboardPage() {
 
   const handleLoadDemoData = () => {
     syncTransactions(demoTransactions);
+    addToast('Loaded sample transactions', 'info');
     trackEvent('demo_data_loaded', { count: demoTransactions.length });
   };
 
@@ -225,6 +235,7 @@ export default function DashboardPage() {
     a.download = `finsight-expenses-${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
+    addToast('CSV export downloaded successfully', 'success');
     trackEvent('transactions_exported_csv', { count: transactions.length });
   };
 
@@ -232,7 +243,9 @@ export default function DashboardPage() {
     sessionStorage.removeItem('transactions');
     sessionStorage.removeItem('monthlyBudget');
     setTransactions([]);
+    setLastUpdated(new Date());
     setShowClearConfirm(false);
+    addToast('All session data cleared', 'info');
     trackEvent('session_data_cleared');
   };
 
@@ -329,8 +342,12 @@ export default function DashboardPage() {
               Financial dashboard
               {isAnalyzing && <Loader2 className="w-5 h-5 text-[#10B981] animate-spin" />}
             </h1>
-            <p className="text-[#9CA3AF] mt-1 font-medium tracking-tight text-xs flex items-center gap-1.5">
-              Live Analysis • Session Based ({transactions.length} {transactions.length === 1 ? 'receipt' : 'receipts'})
+            <p className="text-[#9CA3AF] mt-1 font-medium tracking-tight text-xs flex flex-wrap items-center gap-1.5">
+              <span>Live Analysis • Session Based ({transactions.length} {transactions.length === 1 ? 'receipt' : 'receipts'})</span>
+              <span>•</span>
+              <span className="text-emerald-400">
+                Last updated {lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </span>
             </p>
           </div>
 
@@ -839,7 +856,7 @@ export default function DashboardPage() {
                   <ExpenseCard
                     key={t.id}
                     {...t}
-                    onDelete={() => handleDeleteTransaction(t.id)}
+                    onDelete={() => setExpenseToDelete(t)}
                     onEdit={(id, updatedData) => handleEditTransaction(id, updatedData)}
                   />
                 ))}
@@ -940,8 +957,9 @@ export default function DashboardPage() {
       )}
 
       {/* Clear Session Data Confirmation Modal */}
+      {/* Clear Session Data Confirmation Modal */}
       {showClearConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 animate-in fade-in duration-150">
           <div className="liquid-glass max-w-sm w-full p-6 border border-white/[0.12] text-center animate-fade-in-up">
             <div className="w-12 h-12 rounded-2xl bg-[#EF4444]/15 border border-[#EF4444]/30 flex items-center justify-center mx-auto mb-4">
               <Trash2 className="w-6 h-6 text-[#EF4444]" />
@@ -962,6 +980,38 @@ export default function DashboardPage() {
                 className="flex-1 py-2.5 rounded-xl bg-[#EF4444] text-white text-xs font-semibold hover:bg-[#DC2626] cursor-pointer"
               >
                 Delete Everything
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Individual Expense Deletion Confirmation Modal */}
+      {expenseToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 animate-in fade-in duration-150">
+          <div className="liquid-glass max-w-sm w-full p-6 border border-white/[0.12] text-center animate-fade-in-up">
+            <div className="w-12 h-12 rounded-2xl bg-[#EF4444]/15 border border-[#EF4444]/30 flex items-center justify-center mx-auto mb-4">
+              <Trash2 className="w-6 h-6 text-[#EF4444]" />
+            </div>
+            <h3 className="font-space text-lg font-bold text-white mb-2">Delete Expense?</h3>
+            <p className="text-xs text-[#9CA3AF] leading-relaxed mb-6">
+              Are you sure you want to remove <span className="font-semibold text-white">{expenseToDelete.merchant}</span> (₹{Number(expenseToDelete.amount || 0).toLocaleString()}) from your session?
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setExpenseToDelete(null)}
+                className="flex-1 py-2.5 rounded-xl bg-white/[0.06] text-white text-xs font-semibold hover:bg-white/[0.10] cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  handleDeleteTransaction(expenseToDelete.id);
+                  setExpenseToDelete(null);
+                }}
+                className="flex-1 py-2.5 rounded-xl bg-[#EF4444] text-white text-xs font-semibold hover:bg-[#DC2626] cursor-pointer"
+              >
+                Delete
               </button>
             </div>
           </div>

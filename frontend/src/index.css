@@ -256,13 +256,112 @@ body {
   animation: pulse-glow 3s ease-in-out infinite;
 }
 
-/* ─── Focus Ring Reset ─── */
+/* ─── Focus Ring Reset & Accessibility ─── */
 *:focus-visible {
-  outline: 2px solid var(--color-primary);
+  outline: 2px solid #10B981;
   outline-offset: 2px;
 }
 
 /* Selection highlight */
 ::selection {
-  background: rgba(198, 131, 70, 0.2);
+  background: rgba(16, 185, 129, 0.25);
+  color: #10B981;
+}
+
+/* ─── Light Mode Theme Support ─── */
+html.light,
+html.light body {
+  background-color: #F8FAFC !important;
+  color: #0F172A !important;
+}
+
+html.light .bg-slate-950,
+html.light .bg-slate-900 {
+  background-color: #FFFFFF !important;
+  color: #0F172A !important;
+}
+
+html.light .bg-slate-900\/40,
+html.light .bg-slate-900\/50,
+html.light .bg-slate-900\/60,
+html.light .bg-slate-900\/80,
+html.light .bg-slate-950\/40,
+html.light .bg-slate-950\/60,
+html.light .bg-slate-950\/80 {
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  backdrop-filter: blur(12px);
+}
+
+html.light .bg-slate-800\/50,
+html.light .bg-slate-800\/60,
+html.light .bg-slate-800\/80,
+html.light .bg-slate-800 {
+  background-color: #F1F5F9 !important;
+  color: #0F172A !important;
+}
+
+html.light .border-slate-800,
+html.light .border-slate-800\/40,
+html.light .border-slate-800\/50,
+html.light .border-slate-800\/80,
+html.light .border-slate-700,
+html.light .border-slate-700\/80 {
+  border-color: #E2E8F0 !important;
+}
+
+html.light .text-slate-100,
+html.light .text-slate-200 {
+  color: #0F172A !important;
+}
+
+html.light .text-slate-300,
+html.light .text-slate-400 {
+  color: #475569 !important;
+}
+
+html.light .text-slate-500 {
+  color: #64748B !important;
+}
+
+html.light .liquid-glass,
+html.light .liquid-glass-premium {
+  background: rgba(255, 255, 255, 0.92) !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06) !important;
+}
+
+/* ─── Print Stylesheet ─── */
+@media print {
+  body {
+    background: #FFFFFF !important;
+    color: #000000 !important;
+    font-size: 11pt !important;
+  }
+
+  nav,
+  footer,
+  button,
+  .print\:hidden {
+    display: none !important;
+  }
+
+  .shadow-md,
+  .shadow-lg,
+  .shadow-xl,
+  .shadow-2xl,
+  .shadow-emerald-500\/20,
+  .shadow-emerald-500\/25 {
+    box-shadow: none !important;
+  }
+
+  .border,
+  .border-slate-800,
+  .border-slate-700 {
+    border-color: #CCCCCC !important;
+  }
+
+  table, tr, td, th, .card {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
 }

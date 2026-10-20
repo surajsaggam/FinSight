@@ -1,75 +1,79 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { categories } from '../data/dummyData';
-import { Tag, CheckCircle, ArrowRight, ChevronDown, RefreshCw } from 'lucide-react';
+import { categories, CATEGORY_EMOJIS } from '../data/dummyData';
+import { Tag, CheckCircle, ArrowRight, ChevronDown, RefreshCw, AlertTriangle } from 'lucide-react';
+import { trackEvent } from '../utils/analytics';
+
+function inferInitialCategory(data) {
+  if (!data) return 'Other';
+  if (data.category && data.category !== 'Other') return data.category;
+  if (data.merchant_name) {
+    const lower = data.merchant_name.toLowerCase();
+    if (lower.includes('zomato') || lower.includes('swiggy') || lower.includes('starbucks') || lower.includes('cafe')) {
+      return 'Food';
+    }
+    if (lower.includes('uber') || lower.includes('ola') || lower.includes('shell')) {
+      return 'Transportation';
+    }
+    if (lower.includes('amazon') || lower.includes('myntra')) {
+      return 'Shopping';
+    }
+    if (lower.includes('reliance') || lower.includes('fresh') || lower.includes('mart')) {
+      return 'Groceries';
+    }
+    return data.category || 'Shopping';
+  }
+  return 'Other';
+}
 
 export default function CategorizationPage() {
-  const [selectedCategory, setSelectedCategory] = useState('');
-  const [isOpen, setIsOpen] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const [duplicateError, setDuplicateError] = useState(false);
-  
   const location = useLocation();
   const navigate = useNavigate();
   const data = location.state?.receiptData;
 
+  const [selectedCategory, setSelectedCategory] = useState(() => inferInitialCategory(data));
+  const [isOpen, setIsOpen] = useState(false);
+  const [saved, setSaved] = useState(false);
+
   useEffect(() => {
     if (!data) {
       navigate('/upload');
-      return;
     }
-    if (data.merchant_name && !selectedCategory) {
-      const lower = data.merchant_name.toLowerCase();
-      if (lower.includes('zomato') || lower.includes('swiggy') || lower.includes('starbucks')) setSelectedCategory('Food');
-      else if (lower.includes('uber') || lower.includes('ola')) setSelectedCategory('Travel');
-      else if (lower.includes('amazon') || lower.includes('myntra')) setSelectedCategory('Shopping');
-      else if (lower.includes('reliance') || lower.includes('fresh')) setSelectedCategory('Groceries');
-      else setSelectedCategory('Shopping');
-    }
-
-    // Check for existing duplicate on load (Aggressive: Date + Amount)
-    const existing = JSON.parse(sessionStorage.getItem('transactions') || '[]');
-    const isDuplicate = existing.some(t => 
-      t.date === data.date && 
-      Math.abs(t.amount - data.total_amount) < 0.01
-    );
-    if (isDuplicate) setDuplicateError(true);
-  }, [data, navigate, selectedCategory]);
+  }, [data, navigate]);
 
   if (!data) return null;
 
+  let isDuplicate = false;
+  try {
+    const existing = JSON.parse(sessionStorage.getItem('transactions') || '[]');
+    isDuplicate = existing.some(
+      (t) =>
+        t.date === data.date &&
+        Math.abs(Number(t.amount) - Number(data.total_amount)) < 0.01
+    );
+  } catch {
+    isDuplicate = false;
+  }
+
+  const totalAmount = Number(data.total_amount) || 0;
+
   const handleSave = () => {
     const existing = JSON.parse(sessionStorage.getItem('transactions') || '[]');
-    
-    // Check for duplicate receipt (Aggressive: Date + Amount)
-    const isDuplicate = existing.some(t => 
-      t.date === data.date && 
-      Math.abs(t.amount - data.total_amount) < 0.01
-    );
-
-    if (isDuplicate) {
-      setDuplicateError(true);
-      return;
-    }
 
     const newTransaction = {
       id: Date.now(),
-      merchant: data.merchant_name,
-      amount: data.total_amount,
-      date: data.date,
-      currency: data.currency,
-      category: selectedCategory,
-      items: data.items,
-      icon: categoryEmojis[selectedCategory] || '🛍️'
+      merchant: data.merchant_name || 'Unknown Merchant',
+      amount: totalAmount,
+      date: data.date || new Date().toISOString().slice(0, 10),
+      currency: data.currency || 'INR',
+      category: selectedCategory || 'Other',
+      items: Array.isArray(data.items) ? data.items : [],
+      icon: CATEGORY_EMOJIS[selectedCategory] || '📦',
     };
     sessionStorage.setItem('transactions', JSON.stringify([...existing, newTransaction]));
+    window.dispatchEvent(new Event('finsight-session-updated'));
+    trackEvent('receipt_categorized_and_saved', { category: selectedCategory });
     setSaved(true);
-    setDuplicateError(false);
-  };
-
-  const categoryEmojis = {
-    Food: '🍔', Travel: '🚗', Shopping: '🛍️', Entertainment: '🎬',
-    Groceries: '🥦', Utilities: '⚡', Health: '💊', Education: '📚', Other: '📦'
   };
 
   const renderCategoryList = [...categories, 'Other'];
@@ -90,14 +94,16 @@ export default function CategorizationPage() {
 
         {/* Transaction Summary */}
         <div className="liquid-glass p-6 mb-10 animate-fade-in-up delay-100">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center flex-shrink-0">
-                <span className="text-xl">{categoryEmojis[selectedCategory] || '📦'}</span>
+                <span className="text-xl">{CATEGORY_EMOJIS[selectedCategory] || '📦'}</span>
               </div>
               <div>
                 <h3 className="text-lg font-bold text-white tracking-wide">{data.merchant_name}</h3>
-                <p className="text-[11px] font-bold tracking-widest uppercase text-[#4B5563] mt-1">{data.currency} {data.total_amount.toFixed(2)} • {data.date}</p>
+                <p className="text-[11px] font-bold tracking-widest uppercase text-[#4B5563] mt-1">
+                  {data.currency} {totalAmount.toFixed(2)} • {data.date}
+                </p>
               </div>
             </div>
             <span className="px-3 py-1.5 rounded-full bg-[#10B981]/10 border border-[#10B981]/20 text-[10px] font-bold tracking-widest uppercase text-[#10B981]">
@@ -112,11 +118,12 @@ export default function CategorizationPage() {
             Change Category
           </label>
           <button
+            type="button"
             onClick={() => setIsOpen(!isOpen)}
-            className="w-full flex items-center justify-between px-6 py-4 rounded-xl liquid-glass text-white text-base font-bold tracking-wide hover:border-[#10B981]/50 transition-all focus:outline-none focus:ring-2 focus:ring-[#10B981]"
+            className="w-full flex items-center justify-between px-6 py-4 rounded-xl liquid-glass text-white text-base font-bold tracking-wide hover:border-[#10B981]/50 transition-all focus:outline-none focus:ring-2 focus:ring-[#10B981] cursor-pointer"
           >
             <div className="flex items-center gap-4">
-              <span className="text-xl">{categoryEmojis[selectedCategory] || '📦'}</span>
+              <span className="text-xl">{CATEGORY_EMOJIS[selectedCategory] || '📦'}</span>
               <span>{selectedCategory}</span>
             </div>
             <ChevronDown className={`w-5 h-5 text-[#9CA3AF] transition-transform ${isOpen ? 'rotate-180 text-[#10B981]' : ''}`} />
@@ -126,13 +133,14 @@ export default function CategorizationPage() {
             <div className="absolute z-10 w-full mt-2 bg-[#0a0b12] rounded-xl border border-white/[0.08] shadow-lg overflow-hidden py-2 max-h-[300px] overflow-y-auto">
               {renderCategoryList.map((cat) => (
                 <button
+                  type="button"
                   key={cat}
-                  onClick={() => { setSelectedCategory(cat); setIsOpen(false); setSaved(false); setDuplicateError(false); }}
-                  className={`w-full flex items-center gap-4 px-6 py-3 text-sm font-semibold tracking-wide hover:bg-white/[0.05] transition-colors
+                  onClick={() => { setSelectedCategory(cat); setIsOpen(false); setSaved(false); }}
+                  className={`w-full flex items-center gap-4 px-6 py-3 text-sm font-semibold tracking-wide hover:bg-white/[0.05] transition-colors cursor-pointer
                     ${selectedCategory === cat ? 'text-[#10B981] bg-[#10B981]/5' : 'text-[#9CA3AF]'}
                   `}
                 >
-                  <span className="text-lg">{categoryEmojis[cat] || '📦'}</span>
+                  <span className="text-lg">{CATEGORY_EMOJIS[cat] || '📦'}</span>
                   <span>{cat}</span>
                   {selectedCategory === cat && <CheckCircle className="w-4 h-4 ml-auto text-[#10B981]" />}
                 </button>
@@ -143,15 +151,16 @@ export default function CategorizationPage() {
 
         {/* Actions */}
         <div className="animate-fade-in-up delay-300">
-          {duplicateError && !saved && (
-            <div className="mb-4 py-3 px-4 rounded-xl bg-[#EF4444]/10 border border-[#EF4444]/20 text-[#EF4444] text-sm font-bold text-center flex items-center justify-center gap-2 animate-fade-in-up">
-              <span className="text-base">⚠️</span> This receipt has already been added
+          {isDuplicate && !saved && (
+            <div className="mb-4 py-3 px-4 rounded-xl bg-[#F59E0B]/10 border border-[#F59E0B]/25 text-[#F59E0B] text-xs font-medium text-center flex items-center justify-center gap-2 animate-fade-in-up">
+              <AlertTriangle size={15} className="shrink-0" />
+              <span>A receipt with this date & amount already exists in your dashboard.</span>
             </div>
           )}
           {saved ? (
             <button
               onClick={() => navigate('/dashboard')}
-              className="w-full py-4 rounded-full bg-[#10B981]/10 border border-[#10B981]/20 text-[#10B981] font-semibold flex items-center justify-center gap-2 hover:bg-[#10B981]/20 transition-all"
+              className="w-full py-4 rounded-full bg-[#10B981]/10 border border-[#10B981]/20 text-[#10B981] font-semibold flex items-center justify-center gap-2 hover:bg-[#10B981]/20 transition-all cursor-pointer"
             >
               <CheckCircle className="w-5 h-5 mr-2" />
               Saved! View Dashboard
@@ -161,16 +170,16 @@ export default function CategorizationPage() {
             <div className="flex gap-3">
               <button
                 onClick={() => navigate('/upload')}
-                className="w-1/3 flex items-center justify-center gap-2 py-4 rounded-xl border border-white/[0.12] bg-white/[0.04] text-[#9CA3AF] font-semibold text-sm hover:bg-white/[0.08] transition-all"
+                className="w-1/3 flex items-center justify-center gap-2 py-4 rounded-xl border border-white/[0.12] bg-white/[0.04] text-[#9CA3AF] font-semibold text-sm hover:bg-white/[0.08] transition-all cursor-pointer"
               >
                 <RefreshCw size={16} />
                 Rescan
               </button>
               <button
                 onClick={handleSave}
-                className="w-2/3 py-4 rounded-full bg-[#10B981] text-white font-semibold flex items-center justify-center gap-2 hover:bg-[#059669] transition-all animate-pulse-glow"
+                className="w-2/3 py-4 rounded-full bg-[#10B981] text-white font-semibold flex items-center justify-center gap-2 hover:bg-[#059669] transition-all animate-pulse-glow cursor-pointer"
               >
-                Confirm Categorization
+                {isDuplicate ? 'Confirm & Save Anyway' : 'Confirm Categorization'}
                 <ArrowRight className="w-5 h-5 ml-2" />
               </button>
             </div>

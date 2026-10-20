@@ -32,7 +32,7 @@ function HeroSection() {
       {/* Ambient glow */}
       <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse 60% 50% at 70% 45%, rgba(16,185,129,0.08) 0%, transparent 70%)' }} />
 
-      <div className="w-full max-w-7xl mx-auto px-6 lg:px-16 py-20 lg:py-0 flex flex-col lg:flex-row items-center gap-16 lg:gap-12">
+      <div className="w-full max-w-7xl mx-auto px-6 lg:px-16 py-24 lg:py-0 flex flex-col lg:flex-row items-center gap-16 lg:gap-12">
 
         {/* Left Block */}
         <div className="flex-1 lg:max-w-[52%] animate-fade-in-up">
@@ -45,10 +45,10 @@ function HeroSection() {
 
           {/* CTAs */}
           <div className="mt-8 flex flex-wrap gap-3">
-            <Link to="/signup" className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#10B981] text-white font-semibold text-sm hover:bg-[#059669] hover:scale-[1.02] transition-all duration-300 animate-pulse-glow">
+            <Link to="/upload" className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#10B981] text-white font-semibold text-sm hover:bg-[#059669] hover:scale-[1.02] transition-all duration-300 animate-pulse-glow">
               <ScanLine className="w-4 h-4" /> Scan a Receipt
             </Link>
-            <Link to="/login" className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/[0.22] text-white text-sm font-medium hover:bg-white/[0.06] transition-all duration-300">
+            <Link to="/dashboard" className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/[0.22] text-white text-sm font-medium hover:bg-white/[0.06] transition-all duration-300">
               View Dashboard
             </Link>
           </div>
@@ -62,12 +62,12 @@ function HeroSection() {
         </div>
 
         {/* Right Block — Cash Flow Card */}
-        <div className="flex-1 lg:max-w-[48%] flex justify-center animate-fade-in-up delay-200">
-          <div className="relative">
+        <div className="flex-1 lg:max-w-[48%] flex justify-center w-full animate-fade-in-up delay-200">
+          <div className="relative w-full max-w-[420px]">
             {/* Ambient glow behind card */}
             <div className="absolute -inset-8 pointer-events-none" style={{ background: 'radial-gradient(ellipse 70% 60% at 60% 40%, rgba(16,185,129,0.12) 0%, transparent 70%)' }} />
 
-            <div className="liquid-glass w-full max-w-[420px] p-6 animate-float" style={{ background: 'rgba(8, 11, 18, 0.85)' }}>
+            <div className="liquid-glass w-full p-6 animate-float" style={{ background: 'rgba(8, 11, 18, 0.85)' }}>
               {/* Top row */}
               <div className="flex items-center justify-between mb-4">
                 <span className="font-space text-[13px] text-[#9CA3AF]">Cash Flow</span>
@@ -139,7 +139,7 @@ function SocialProof() {
       <p className="text-center text-[11px] tracking-[0.14em] uppercase text-[#374151] font-medium">
         Built for everyday spending
       </p>
-      <div className="mt-7 max-w-3xl mx-auto flex items-center justify-evenly">
+      <div className="mt-7 max-w-3xl mx-auto flex flex-wrap items-center justify-evenly gap-6">
         {[
           { value: 'Seconds', label: 'From photo to expense' },
           { value: '28', label: 'Currencies auto-converted' },
@@ -147,7 +147,7 @@ function SocialProof() {
         ].map((s, i) => (
           <div key={i} className="flex items-center">
             {i > 0 && <div className="w-px h-10 bg-white/[0.07] mr-8 lg:mr-12 hidden sm:block" />}
-            <div className={`text-center ${i > 0 ? 'ml-0 sm:ml-0' : ''}`}>
+            <div className="text-center">
               <div className="font-space font-bold text-2xl lg:text-[28px] text-white">{s.value}</div>
               <div className="text-[13px] text-[#6B7280] mt-1">{s.label}</div>
             </div>
@@ -265,14 +265,6 @@ function FeaturesGrid() {
             </div>
           ))}
         </div>
-
-        {/* Footer */}
-        <div className="w-full text-center pb-8 opacity-50">
-          <p className="text-xs font-medium text-gray-400 tracking-wide">
-            Built with ❤️ using React, Gemini AI, and scikit-learn  •  FinSight © 2026
-          </p>
-        </div>
-
       </div>
     </section>
   );
@@ -358,12 +350,17 @@ function CTASection() {
           Stop guessing.<br />Start knowing.
         </h2>
         <p className="mt-5 text-base text-[#9CA3AF] max-w-[440px] mx-auto">
-          Create your account and upload your first receipt in seconds.
+          No sign-up required. Upload your first receipt or explore interactive demo data in seconds.
         </p>
 
-        <Link to="/signup" className="mt-8 inline-flex items-center gap-2 px-9 py-3.5 rounded-full bg-[#10B981] text-white font-bold text-[15px] hover:bg-[#059669] hover:scale-[1.03] transition-all duration-300 animate-pulse-glow">
-          Scan Your First Receipt
-        </Link>
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+          <Link to="/upload" className="inline-flex items-center gap-2 px-9 py-3.5 rounded-full bg-[#10B981] text-white font-bold text-[15px] hover:bg-[#059669] hover:scale-[1.03] transition-all duration-300 animate-pulse-glow">
+            Scan Your First Receipt
+          </Link>
+          <Link to="/dashboard" className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full border border-white/[0.18] text-white font-semibold text-[15px] hover:bg-white/[0.06] transition-all duration-300">
+            Explore Dashboard
+          </Link>
+        </div>
       </div>
     </section>
   );
@@ -383,7 +380,9 @@ function Footer() {
               </div>
               <span className="font-space font-bold text-white text-sm">FinSight</span>
             </div>
-            <p className="text-sm text-[#6B7280] max-w-[210px] leading-relaxed">AI-powered expense tracking for the financially aware.</p>
+            <p className="text-sm text-[#6B7280] max-w-[240px] leading-relaxed">
+              Privacy-first, AI-powered expense tracking and forecasting for the financially aware.
+            </p>
           </div>
 
           {/* Navigate */}
@@ -403,11 +402,23 @@ function Footer() {
             </ul>
           </div>
 
+          {/* Legal & Privacy */}
+          <div>
+            <h4 className="font-space font-semibold text-[13px] text-[#9CA3AF] mb-4">Legal & Privacy</h4>
+            <ul className="space-y-2.5">
+              <li>
+                <Link to="/privacy" className="text-sm text-[#6B7280] hover:text-white transition-colors">Privacy Policy</Link>
+              </li>
+              <li>
+                <Link to="/terms" className="text-sm text-[#6B7280] hover:text-white transition-colors">Terms & Conditions</Link>
+              </li>
+            </ul>
+          </div>
         </div>
 
         {/* Bottom bar */}
         <div className="pt-6 border-t border-white/[0.06] flex flex-col sm:flex-row items-center justify-between gap-3">
-          <span className="text-[12px] text-[#4B5563]">© {new Date().getFullYear()} FinSight. Built with Gemini AI.</span>
+          <span className="text-[12px] text-[#4B5563]">© {new Date().getFullYear()} FinSight. Built with React, Gemini AI & scikit-learn.</span>
           <span className="text-[12px] text-[#4B5563]">FinSight gives spending insights, not financial advice.</span>
         </div>
       </div>

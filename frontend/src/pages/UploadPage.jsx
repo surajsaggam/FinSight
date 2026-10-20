@@ -1,6 +1,11 @@
 import { useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Upload, FileImage, X, Loader2, ScanLine } from 'lucide-react';
+import { Upload, FileImage, X, Loader2, ScanLine, AlertCircle } from 'lucide-react';
+import { uploadReceiptImage } from '../utils/api';
+import { trackEvent } from '../utils/analytics';
+
+const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
+const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
 
 export default function UploadPage() {
   const [file, setFile] = useState(null);
@@ -13,10 +18,24 @@ export default function UploadPage() {
 
   const handleFile = (f) => {
     if (!f) return;
-    if (!f.type.startsWith('image/')) {
-      setError('Please upload an image file (JPG, PNG, WEBP, etc.)');
+
+    if (!ALLOWED_MIME_TYPES.includes(f.type)) {
+      setError('Invalid file format. Please upload a JPG, PNG, WEBP, or GIF receipt image.');
+      trackEvent('receipt_validation_error', { reason: 'invalid_mime', type: f.type });
       return;
     }
+
+    if (f.size > MAX_FILE_SIZE_BYTES) {
+      setError(`File is too large (${(f.size / (1024 * 1024)).toFixed(1)} MB). Maximum allowed size is 10 MB.`);
+      trackEvent('receipt_validation_error', { reason: 'file_too_large', size: f.size });
+      return;
+    }
+
+    if (f.size === 0) {
+      setError('The selected image file is empty. Please select a valid receipt image.');
+      return;
+    }
+
     setError(null);
     setFile(f);
     setPreview(URL.createObjectURL(f));
@@ -32,6 +51,7 @@ export default function UploadPage() {
   const onDragLeave = () => setDragging(false);
 
   const clearFile = () => {
+    if (preview) URL.revokeObjectURL(preview);
     setFile(null);
     setPreview(null);
     setError(null);
@@ -42,49 +62,20 @@ export default function UploadPage() {
     if (!file) return;
     setLoading(true);
     setError(null);
+    trackEvent('receipt_scan_started', { size_kb: Math.round(file.size / 1024) });
 
     try {
-      const formData = new FormData();
-      formData.append('receipt', file);
-
-      console.log('Uploading receipt...', file.name);
-
-      const res = await fetch('http://localhost:5000/api/receipt', {
-        method: 'POST',
-        body: formData,
+      const parsedData = await uploadReceiptImage(file);
+      trackEvent('receipt_scan_succeeded', {
+        category: parsedData?.category || 'Other',
+        currency: parsedData?.currency || 'INR',
       });
 
-      const rawText = await res.text();
-      let json;
-      try {
-        json = JSON.parse(rawText);
-      } catch (parseErr) {
-        console.error('Backend returned non-JSON:', rawText);
-        throw new Error(`Backend error: ${rawText.substring(0, 100)}`);
-      }
-
-      console.log('Backend response:', json);
-
-      if (!res.ok || !json.success) {
-        throw new Error(json.error || `Failed to parse receipt (status ${res.status})`);
-      }
-
-      // Aggressive duplicate check (Date + Amount)
-      const existing = JSON.parse(sessionStorage.getItem('transactions') || '[]');
-      const isDuplicate = existing.some(t => 
-        t.date === json.data.date && 
-        Math.abs(t.amount - json.data.total_amount) < 0.01
-      );
-
-      if (isDuplicate) {
-        throw new Error(`Duplicate detected: A receipt for ${json.data.currency} ${json.data.total_amount} on ${json.data.date} is already in your dashboard.`);
-      }
-
-      navigate('/processing', { state: { receiptData: json.data } });
-
+      navigate('/processing', { state: { receiptData: parsedData } });
     } catch (err) {
       console.error('Receipt upload error:', err);
-      setError(err.message);
+      trackEvent('receipt_scan_failed', { error: err.message });
+      setError(err.message || 'Unable to process receipt right now. Please try again.');
       setLoading(false);
     }
   };
@@ -126,7 +117,9 @@ export default function UploadPage() {
                 className="w-full max-h-72 object-contain rounded-xl"
               />
               <button
+                type="button"
                 onClick={(e) => { e.stopPropagation(); clearFile(); }}
+                aria-label="Remove selected image"
                 className="absolute top-2 right-2 p-1.5 rounded-full bg-black/60 text-white hover:bg-black/80 transition-colors"
               >
                 <X size={14} />
@@ -152,7 +145,7 @@ export default function UploadPage() {
                   or <span className="text-[#10B981] underline underline-offset-2">browse files</span>
                 </p>
               </div>
-              <p className="text-xs text-[#4B5563]">JPG, PNG, WEBP up to 10MB</p>
+              <p className="text-xs text-[#4B5563]">JPG, PNG, WEBP, GIF up to 10MB</p>
             </div>
           )}
         </div>
@@ -160,15 +153,16 @@ export default function UploadPage() {
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/*"
+          accept="image/jpeg,image/png,image/webp,image/gif"
           className="hidden"
           onChange={(e) => handleFile(e.target.files[0])}
         />
 
         {/* Error */}
         {error && (
-          <div className="mt-3 px-4 py-3 rounded-xl bg-[#EF4444]/10 border border-[#EF4444]/25 text-[#EF4444] text-sm animate-fade-in-up">
-            {error}
+          <div className="mt-4 px-4 py-3.5 rounded-xl bg-[#EF4444]/10 border border-[#EF4444]/25 text-[#EF4444] text-sm flex items-start gap-2.5 animate-fade-in-up">
+            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+            <span>{error}</span>
           </div>
         )}
 
@@ -176,12 +170,12 @@ export default function UploadPage() {
         <button
           onClick={handleSubmit}
           disabled={!file || loading}
-          className="w-full mt-4 py-3.5 text-base rounded-full bg-[#10B981] text-white font-semibold flex items-center justify-center gap-2 hover:bg-[#059669] hover:scale-[1.01] transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed animate-pulse-glow"
+          className="w-full mt-4 py-3.5 text-base rounded-full bg-[#10B981] text-white font-semibold flex items-center justify-center gap-2 hover:bg-[#059669] hover:scale-[1.01] transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed animate-pulse-glow cursor-pointer"
         >
           {loading ? (
             <>
               <Loader2 size={18} className="animate-spin" />
-              Analyzing receipt...
+              Analyzing receipt with Gemini AI...
             </>
           ) : (
             <>
@@ -192,7 +186,7 @@ export default function UploadPage() {
         </button>
 
         <p className="text-center text-xs text-[#4B5563] mt-4">
-          Your receipt is processed securely and never stored permanently.
+          Your receipt is processed securely in memory and immediately deleted after extraction.
         </p>
       </div>
     </div>

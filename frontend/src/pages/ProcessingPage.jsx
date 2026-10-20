@@ -30,6 +30,10 @@ export default function ProcessingPage() {
   }, []);
 
   useEffect(() => {
+    if (!data) {
+      navigate('/upload', { replace: true });
+      return;
+    }
     const totalTime = steps.length * 150;
     const timer = setTimeout(() => {
       navigate('/result', { state: { receiptData: data } });

@@ -2,8 +2,8 @@ import { Link } from 'react-router-dom';
 import { useEffect, useRef } from 'react';
 import {
   ArrowRight, ArrowUpRight, Sparkles, Camera, Brain, BarChart3,
-  Upload, Shield, CheckCircle, MessageCircle, Send, ScanLine,
-  TrendingUp, Github, Twitter
+  Upload, Shield, Send, ScanLine,
+  TrendingUp
 } from 'lucide-react';
 
 /* ─── Scroll Reveal Hook ─── */
@@ -45,10 +45,10 @@ function HeroSection() {
 
           {/* CTAs */}
           <div className="mt-8 flex flex-wrap gap-3">
-            <Link to="/upload" className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#10B981] text-white font-semibold text-sm hover:bg-[#059669] hover:scale-[1.02] transition-all duration-300 animate-pulse-glow">
+            <Link to="/signup" className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#10B981] text-white font-semibold text-sm hover:bg-[#059669] hover:scale-[1.02] transition-all duration-300 animate-pulse-glow">
               <ScanLine className="w-4 h-4" /> Scan a Receipt
             </Link>
-            <Link to="/dashboard" className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/[0.22] text-white text-sm font-medium hover:bg-white/[0.06] transition-all duration-300">
+            <Link to="/login" className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/[0.22] text-white text-sm font-medium hover:bg-white/[0.06] transition-all duration-300">
               View Dashboard
             </Link>
           </div>
@@ -137,13 +137,13 @@ function SocialProof() {
   return (
     <section ref={ref} className="reveal py-10 lg:py-14 px-6 lg:px-16" style={{ background: '#060810' }}>
       <p className="text-center text-[11px] tracking-[0.14em] uppercase text-[#374151] font-medium">
-        Trusted by people who take their finances seriously
+        Built for everyday spending
       </p>
       <div className="mt-7 max-w-3xl mx-auto flex items-center justify-evenly">
         {[
-          { value: '10,000+', label: 'Receipts Scanned' },
-          { value: '₹ 2.4 Cr+', label: 'Amount Tracked' },
-          { value: '99.2%', label: 'AI Accuracy' },
+          { value: 'Seconds', label: 'From photo to expense' },
+          { value: '28', label: 'Currencies auto-converted' },
+          { value: '0', label: 'Receipt images stored' },
         ].map((s, i) => (
           <div key={i} className="flex items-center">
             {i > 0 && <div className="w-px h-10 bg-white/[0.07] mr-8 lg:mr-12 hidden sm:block" />}
@@ -263,7 +263,7 @@ function FeaturesGrid() {
               <h3 className="text-base font-semibold text-white mb-1.5">{f.title}</h3>
               <p className="text-[13px] text-[#9CA3AF] leading-relaxed">{f.body}</p>
             </div>
-          </div>
+          ))}
         </div>
 
         {/* Footer */}
@@ -358,10 +358,10 @@ function CTASection() {
           Stop guessing.<br />Start knowing.
         </h2>
         <p className="mt-5 text-base text-[#9CA3AF] max-w-[440px] mx-auto">
-          Upload your first receipt in seconds. No signup, no setup, no nonsense.
+          Create your account and upload your first receipt in seconds.
         </p>
 
-        <Link to="/upload" className="mt-8 inline-flex items-center gap-2 px-9 py-3.5 rounded-full bg-[#10B981] text-white font-bold text-[15px] hover:bg-[#059669] hover:scale-[1.03] transition-all duration-300 animate-pulse-glow">
+        <Link to="/signup" className="mt-8 inline-flex items-center gap-2 px-9 py-3.5 rounded-full bg-[#10B981] text-white font-bold text-[15px] hover:bg-[#059669] hover:scale-[1.03] transition-all duration-300 animate-pulse-glow">
           Scan Your First Receipt
         </Link>
       </div>
@@ -403,26 +403,12 @@ function Footer() {
             </ul>
           </div>
 
-          {/* Product */}
-          <div>
-            <h4 className="font-space font-semibold text-[13px] text-[#9CA3AF] mb-4">Product</h4>
-            <ul className="space-y-2.5">
-              {['How It Works', 'Features', 'Privacy', 'Open Source'].map(l => (
-                <li key={l}>
-                  <span className="text-sm text-[#6B7280] hover:text-white transition-colors cursor-pointer">{l}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
         </div>
 
         {/* Bottom bar */}
         <div className="pt-6 border-t border-white/[0.06] flex flex-col sm:flex-row items-center justify-between gap-3">
-          <span className="text-[12px] text-[#4B5563]">© 2025 FinSight. Built with Gemini AI.</span>
-          <div className="flex items-center gap-4">
-            <Github className="w-[18px] h-[18px] text-[#6B7280] hover:text-white transition-colors cursor-pointer" />
-            <Twitter className="w-[18px] h-[18px] text-[#6B7280] hover:text-white transition-colors cursor-pointer" />
-          </div>
+          <span className="text-[12px] text-[#4B5563]">© {new Date().getFullYear()} FinSight. Built with Gemini AI.</span>
+          <span className="text-[12px] text-[#4B5563]">FinSight gives spending insights, not financial advice.</span>
         </div>
       </div>
     </footer>

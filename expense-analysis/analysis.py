@@ -17,6 +17,9 @@ def load_data(filepath):
         # If amount doesn't exist, default to 0
         if "amount" not in df.columns:
             df["amount"] = 0
+
+        if "category" not in df.columns:
+            df["category"] = "Other"
             
         return df
     except Exception as e:

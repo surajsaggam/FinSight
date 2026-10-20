@@ -1,0 +1,6 @@
+   google-genai
+   pydantic
+   Pillow
+   pandas
+   numpy
+   scikit-learn

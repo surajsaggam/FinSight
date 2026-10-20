@@ -28,11 +28,11 @@ client = genai.Client(api_key='enter_your_api_key')
 # ... (keep your existing imports and Pydantic classes)
 
 def analyze_receipt(image_path, retries=3):
-    client = genai.Client(api_key='AIzaSyAYYf1yPfvjKznhzpl48ikUUYrMjXvu2bU')
+    client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
     raw_image = Image.open(image_path)
     
     # NEW: Using the requested 2.5 flash model
-    MODEL_ID = 'gemini-2.5-flash'
+    MODEL_ID = 'gemini-3.8-flash'
 
     for attempt in range(retries):
         try:
